@@ -11,18 +11,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Bell, User, LogOut, Settings } from 'lucide-react';
+import { Bell, User, LogOut, Settings } from 'lucide-react';  
 
 export function Header({ activeSection }) {
   const getSectionTitle = () => {
     switch (activeSection) {
-      case 'dashboard': return 'Dashboard';
+      case 'User Management': return 'User Management';
       case 'users': return 'User Management';
       case 'videos': return 'Video Management';
       case 'coins': return 'Coin Management';
       case 'transactions': return 'Transaction Management';
       case 'contacts': return 'Contact Management';
-      default: return 'Dashboard';
+      default: return 'User Management';
     }
   };
 
@@ -62,10 +62,7 @@ export function Header({ activeSection }) {
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
+              
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <LogOut className="mr-2 h-4 w-4" />
