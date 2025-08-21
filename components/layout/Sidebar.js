@@ -36,9 +36,14 @@ export function Sidebar({ activeSection, setActiveSection }) {
   return (
     <div className="fixed inset-y-0 left-0 w-56 h-screen bg-white dark:bg-gray-800 border-r border-border shadow-lg flex flex-col">
       <div className="px-0 py-1">
-        <div className="w-full">
-          <img src="/logo-removebg.png" alt="Logo" className="w-full h-16 object-contain drop-shadow" />
-        </div>
+       <div className="w-full flex justify-center">
+  <img 
+    src="/logo-removebg.png" 
+    alt="Logo" 
+    className="w-48 h-24 object-contain drop-shadow" 
+  />
+</div>
+
       </div>
       <Separator />
 

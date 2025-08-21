@@ -86,3 +86,16 @@
 .metric-down {
   @apply text-red-600 dark:text-red-400;
 }
+@layer utilities {
+  /* Chrome, Safari, Edge ke liye */
+  .no-spinner::-webkit-outer-spin-button,
+  .no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox ke liye */
+  .no-spinner[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
