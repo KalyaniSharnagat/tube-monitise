@@ -80,11 +80,11 @@ export function UserManagement({ currentPage, setCurrentPage }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        {/* <div>
           <h1 className="text-3xl font-bold text-foreground">User Management</h1>
           <p className="text-muted-foreground">Manage platform users, creators, and their activities</p>
-        </div>
-        <div className="flex space-x-3">
+        </div> */}
+        {/* <div className="flex space-x-3">
           <Button variant="outline">
             <Download className="w-4 h-4 mr-2" />
             Export
@@ -93,11 +93,11 @@ export function UserManagement({ currentPage, setCurrentPage }) {
             <UserPlus className="w-4 h-4 mr-2" />
             Add User
           </Button>
-        </div>
+        </div> */}
       </div>
 
       {/* Filters */}
-      <Card>
+      {/* <Card>
         <CardContent className="p-6">
           <div className="flex items-center space-x-4">
             <div className="relative flex-1 max-w-sm">
@@ -132,7 +132,7 @@ export function UserManagement({ currentPage, setCurrentPage }) {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Users Table */}
       <Card>
