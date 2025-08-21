@@ -28,8 +28,8 @@ const menuItems = [
 
 const secondaryItems = [
   // { id: 'moderation', label: 'Content Moderation', icon: Shield },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  // { id: 'notifications', label: 'Notifications', icon: Bell },
+  // { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 export function Sidebar({ activeSection, setActiveSection }) {
