@@ -73,10 +73,10 @@ export function DashboardOverview() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        {/* <div>
           <h1 className="text-3xl font-bold text-foreground">Dashboard Overview</h1>
           <p className="text-muted-foreground">Monitor your platform's performance and key metrics</p>
-        </div>
+        </div> */}
         <div className="flex space-x-3">
           <Button variant="outline">Export Report</Button>
           <Button className="bg-green-500 hover:bg-green-600">View Analytics</Button>

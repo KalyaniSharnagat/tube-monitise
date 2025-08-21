@@ -27,7 +27,7 @@ export default function Dashboard() {
 
   const renderContent = () => {
     switch (activeSection) {
-      // case 'dashboard':
+      // case 'users':
       //   return <DashboardOverview />;
       case 'users':
         return <UserManagement currentPage={currentPage} setCurrentPage={setCurrentPage} />;
@@ -40,7 +40,7 @@ export default function Dashboard() {
       case 'contacts':
         return <ContactManagement currentPage={currentPage} setCurrentPage={setCurrentPage} />;
       default:
-        // return <DashboardOverview />;
+        return <UserManagement />;
     }
   };
 
