@@ -11,6 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Eye, EyeOff } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { setCookie } from 'cookies-next';
+
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Enter a valid email'),
@@ -21,12 +24,7 @@ const loginSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    if (document.cookie.split('; ').find((row) => row.startsWith('auth='))) {
-      router.replace('/');
-    }
-  }, [router]);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const form = useForm({
     resolver: zodResolver(loginSchema),
@@ -34,14 +32,41 @@ export default function LoginPage() {
     mode: 'onChange',
   });
 
-  const onSubmit = (values) => {
-    const maxAgeSeconds = values.remember ? 60 * 60 * 24 * 7 : 60 * 60 * 24; // 7 days or 1 day
-    document.cookie = `auth=1; Path=/; Max-Age=${maxAgeSeconds}; SameSite=Lax`;
-    router.replace('/');
+  const onSubmit = async (values) => {
+    try {
+      setErrorMessage('');
+
+      const serverResponse = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+        }),
+      });
+
+      const data = await serverResponse.json();
+
+      if (serverResponse.ok && data?.token) {
+        setCookie('auth', data.token);
+        if (data.userDetails) {
+          setCookie('userDetails', JSON.stringify(data.userDetails));
+        }
+
+        router.push('/dashboard/users');
+        toast.success('Login successful');
+      } else {
+        setErrorMessage(data?.message || 'Invalid credentials');
+        toast.warning(data?.message || 'Invalid credentials');
+      }
+    } catch (error) {
+      setErrorMessage(error?.message || 'Login failed');
+      toast.error(error?.message || 'Login failed');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
           <img src="/logo-removebg.png" alt="Logo" className="w-24 h-16 object-contain" />
@@ -110,6 +135,8 @@ export default function LoginPage() {
                   <a href="#" className="text-sm text-primary hover:underline">Forgot password?</a>
                 </div>
 
+                {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
+
                 <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
                   {form.formState.isSubmitting ? 'Signing in...' : 'Sign in'}
                 </Button>
@@ -121,6 +148,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-
-

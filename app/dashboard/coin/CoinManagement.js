@@ -12,22 +12,44 @@ export function CoinManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCoin, setNewCoin] = useState({ coins: '', price: '', popular: false });
 
-  const handleCreateCoin = () => {
-    const exists = coinPackages.some(
-      (pkg) => pkg.coins === newCoin.coins && pkg.price === newCoin.price
-    );
+ const handleCreateCoin = async () => {
+    try {
+      // duplicate check (frontend side)
+      const exists = coinPackages.some(
+        (pkg) => pkg.coins === newCoin.coins && pkg.amount === newCoin.price
+      );
 
-    if (exists) {
-      alert("A coin package with the same coins and amount already exists!");
-      return;
+      if (exists) {
+        alert("A coin package with the same coins and amount already exists!");
+        return;
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/create-coin-slot`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          coins: Number(newCoin.coins),
+          amount: Number(newCoin.price),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Coin package created successfully!");
+        setIsModalOpen(false);
+        setNewCoin({ coins: '', price: '', popular: false });
+        fetchCoins(); // refresh list
+      } else {
+        alert(data.message || "Failed to create coin package");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong while creating coin package.");
     }
-
-    const id = coinPackages.length + 1;
-    setCoinPackages([...coinPackages, { ...newCoin, id }]);
-    setNewCoin({ coins: '', price: '', popular: false });
-    setIsModalOpen(false);
   };
-
   return (
     <div className="space-y-6">
       {/* Coin Packages */}
