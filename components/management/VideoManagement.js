@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  MoreHorizontal, 
+import {
+  MoreHorizontal,
   Play,
   Eye,
   Edit,
@@ -65,9 +65,13 @@ export function VideoManagement() {
           placeholder="Search videos..."
           value={searchString}
           onChange={(e) => setSearchString(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              fetchVideos();
+            }
+          }}
           className="border p-2 rounded-md w-1/3"
         />
-        <Button onClick={() => fetchVideos()}>Search</Button>
       </div>
 
       {/* Loading State */}
@@ -93,8 +97,8 @@ export function VideoManagement() {
                   allowFullScreen
                 />
               ) : (
-                <img 
-                  src={video.thumbnail} 
+                <img
+                  src={video.thumbnail}
                   alt={video.title}
                   className="w-full h-48 object-cover"
                 />
@@ -103,8 +107,8 @@ export function VideoManagement() {
               <div className="absolute top-2 left-2">
                 <Badge className={
                   video.status === 'Published' ? 'bg-green-500' :
-                  video.status === 'Pending' ? 'bg-yellow-500' :
-                  'bg-red-500'
+                    video.status === 'Pending' ? 'bg-yellow-500' :
+                      'bg-red-500'
                 }>
                   {video.status}
                 </Badge>
@@ -128,8 +132,8 @@ export function VideoManagement() {
               </div>
 
               <div className="flex items-center justify-between mt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => handlePreview(video.id)}
                 >
