@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Search, 
   Filter, 
-  MoreHorizontal, 
   UserPlus, 
   Download,
   Eye,
@@ -18,12 +17,15 @@ import {
   Ban,
   CheckCircle
 } from 'lucide-react';
+import { useState } from 'react';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 const users = [
   {
@@ -73,10 +75,129 @@ const users = [
     videos: 12,
     earnings: '$1,456',
     coins: 800
-  }
+  },
+    {
+    id: 3,
+    name: 'Mike Johnson',
+    email: 'mike@example.com',
+    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2',
+    role: 'Creator',
+    status: 'Suspended',
+    joinDate: '2024-01-08',
+    videos: 45,
+    earnings: '$5,234',
+    coins: 2100
+  },
+    {
+    id: 3,
+    name: 'Mike Johnson',
+    email: 'mike@example.com',
+    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2',
+    role: 'Creator',
+    status: 'Suspended',
+    joinDate: '2024-01-08',
+    videos: 45,
+    earnings: '$5,234',
+    coins: 2100
+  },
+    {
+    id: 3,
+    name: 'Mike Johnson',
+    email: 'mike@example.com',
+    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2',
+    role: 'Creator',
+    status: 'Suspended',
+    joinDate: '2024-01-08',
+    videos: 45,
+    earnings: '$5,234',
+    coins: 2100
+  },
+    {
+    id: 3,
+    name: 'Mike Johnson',
+    email: 'mike@example.com',
+    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2',
+    role: 'Creator',
+    status: 'Suspended',
+    joinDate: '2024-01-08',
+    videos: 45,
+    earnings: '$5,234',
+    coins: 2100
+  },
+    {
+    id: 3,
+    name: 'Mike Johnson',
+    email: 'mike@example.com',
+    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2',
+    role: 'Creator',
+    status: 'Suspended',
+    joinDate: '2024-01-08',
+    videos: 45,
+    earnings: '$5,234',
+    coins: 2100
+  },
+    {
+    id: 3,
+    name: 'Mike Johnson',
+    email: 'mike@example.com',
+    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2',
+    role: 'Creator',
+    status: 'Suspended',
+    joinDate: '2024-01-08',
+    videos: 45,
+    earnings: '$5,234',
+    coins: 2100
+  },
+    {
+    id: 3,
+    name: 'Mike Johnson',
+    email: 'mike@example.com',
+    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2',
+    role: 'Creator',
+    status: 'Suspended',
+    joinDate: '2024-01-08',
+    videos: 45,
+    earnings: '$5,234',
+    coins: 2100
+  },
+    {
+    id: 3,
+    name: 'Mike Johnson',
+    email: 'mike@example.com',
+    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2',
+    role: 'Creator',
+    status: 'Suspended',
+    joinDate: '2024-01-08',
+    videos: 45,
+    earnings: '$5,234',
+    coins: 2100
+  },
+
+    {
+    id: 3,
+    name: 'Mike Johnson',
+    email: 'mike@example.com',
+    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2',
+    role: 'Creator',
+    status: 'Suspended',
+    joinDate: '2024-01-08',
+    videos: 45,
+    earnings: '$5,234',
+    coins: 2100
+  },
 ];
 
 export function UserManagement({ currentPage, setCurrentPage }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState('view'); // 'view' | 'edit' | 'delete'
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const openModal = (type, user) => {
+    setModalType(type);
+    setSelectedUser(user);
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -96,84 +217,52 @@ export function UserManagement({ currentPage, setCurrentPage }) {
         </div> */}
       </div>
 
-      {/* Filters */}
-      {/* <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center space-x-4">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Search users..." className="pl-10" />
-            </div>
-            <Select>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="creator">Creator</SelectItem>
-                <SelectItem value="viewer">Viewer</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline">
-              <Filter className="w-4 h-4 mr-2" />
-              More Filters
-            </Button>
-          </div>
-        </CardContent>
-      </Card> */}
-
+   
+      
       {/* Users Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Users ({users.length})</CardTitle>
-        </CardHeader>
+       
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
+          <div className="relative max-h-[60vh] overflow-auto scrollbar-hide"  style={{
+    msOverflowStyle: "none",   // IE/Edge
+    scrollbarWidth: "none"     // Firefox
+  }}>
+            <table className="w-full min-w-[900px] ">
+              <thead className="sticky top-0 z-10 bg-white dark:bg-gray-800">
                 <tr className="border-b">
+                  <th className="text-left p-4 font-medium">Sr.No.</th>
                   <th className="text-left p-4 font-medium">User</th>
-                  <th className="text-left p-4 font-medium">Role</th>
+                  <th className="text-left p-4 font-medium">Email</th>
+                  {/* <th className="text-left p-4 font-medium">Role</th> */}
                   <th className="text-left p-4 font-medium">Status</th>
                   <th className="text-left p-4 font-medium">Join Date</th>
                   <th className="text-left p-4 font-medium">Videos</th>
-                  <th className="text-left p-4 font-medium">Earnings</th>
                   <th className="text-left p-4 font-medium">Coins</th>
                   <th className="text-left p-4 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
-                  <tr key={user.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
+                {users.map((user, index) => (
+                  <tr key={`${user.id}-${index}`} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="p-4">{index + 1}</td>
                     <td className="p-4">
                       <div className="flex items-center space-x-3">
-                        <Avatar className="h-10 w-10">
+                        {/* <Avatar className="h-10 w-10">
                           <AvatarImage src={user.avatar} alt={user.name} />
                           <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                        </Avatar>
+                        </Avatar> */}
                         <div>
                           <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                          {/* <p className="text-sm text-muted-foreground">{user.email}</p> */}
                         </div>
                       </div>
                     </td>
+                  
                     <td className="p-4">
                       <Badge variant="outline" className={
-                        user.role === 'Creator' ? 'border-green-200 text-green-700' : 'border-blue-200 text-blue-700'
+                        user.email 
                       }>
-                        {user.role}
+                        {user.email}
                       </Badge>
                     </td>
                     <td className="p-4">
@@ -187,41 +276,19 @@ export function UserManagement({ currentPage, setCurrentPage }) {
                     </td>
                     <td className="p-4 text-sm text-muted-foreground">{user.joinDate}</td>
                     <td className="p-4 font-medium">{user.videos}</td>
-                    <td className="p-4 font-medium text-green-600">{user.earnings}</td>
                     <td className="p-4 font-medium">{user.coins}</td>
                     <td className="p-4">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit User
-                          </DropdownMenuItem>
-                          {user.status === 'Active' ? (
-                            <DropdownMenuItem className="text-red-600">
-                              <Ban className="w-4 h-4 mr-2" />
-                              Suspend User
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem className="text-green-600">
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Activate User
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete User
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex items-center gap-1">
+                        <Button aria-label="View" variant="ghost" size="icon" className="h-7 w-7 p-0" onClick={() => openModal('view', user)}>
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button aria-label="Edit" variant="ghost" size="icon" className="h-7 w-7 p-0" onClick={() => openModal('edit', user)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button aria-label="Delete" variant="ghost" size="icon" className="h-7 w-7 p-0" onClick={() => openModal('delete', user)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -230,6 +297,58 @@ export function UserManagement({ currentPage, setCurrentPage }) {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {modalType === 'view' && 'User Details'}
+              {modalType === 'edit' && 'Edit User'}
+              {modalType === 'delete' && 'Delete User'}
+            </DialogTitle>
+            {modalType === 'view' && (
+              <DialogDescription>Basic information about the user.</DialogDescription>
+            )}
+          </DialogHeader>
+
+          {selectedUser && modalType === 'view' && (
+            <div className="space-y-2">
+              <div className="font-medium">{selectedUser.name}</div>
+              <div className="text-sm text-muted-foreground">{selectedUser.email}</div>
+              <div className="text-sm">Status: {selectedUser.status}</div>
+              <div className="text-sm">Join Date: {selectedUser.joinDate}</div>
+              <div className="text-sm">Videos: {selectedUser.videos}</div>
+              <div className="text-sm">Coins: {selectedUser.coins}</div>
+            </div>
+          )}
+
+          {selectedUser && modalType === 'edit' && (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm mb-1">Name</label>
+                <Input defaultValue={selectedUser.name} />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">Email</label>
+                <Input defaultValue={selectedUser.email} />
+              </div>
+              <div className="flex justify-end">
+                <Button onClick={() => setIsModalOpen(false)}>Save</Button>
+              </div>
+            </div>
+          )}
+
+          {selectedUser && modalType === 'delete' && (
+            <div className="space-y-4">
+              <p>Are you sure you want to delete <span className="font-medium">{selectedUser.name}</span>?</p>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                <Button className="bg-red-500 hover:bg-red-600" onClick={() => setIsModalOpen(false)}>Delete</Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

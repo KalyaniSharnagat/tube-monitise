@@ -86,3 +86,15 @@
 .metric-down {
   @apply text-red-600 dark:text-red-400;
 }
+/* Hide scrollbars utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+/* 
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none ! important; 
+}
+
+.scrollbar-hidden {
+  -ms-overflow-style: none ! important ;   
+  scrollbar-width: none ! important;  
+} */

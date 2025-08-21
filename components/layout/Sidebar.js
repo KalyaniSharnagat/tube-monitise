@@ -24,6 +24,7 @@ const menuItems = [
   { id: 'coins', label: 'Coin Management', icon: Coins },
   { id: 'transactions', label: 'Transaction ', icon: CreditCard },
   { id: 'contacts', label: 'Contact ', icon: MessageSquare },
+ { id: 'notifications', label: 'Notifications', icon: Bell },
 ];
 
 const secondaryItems = [
