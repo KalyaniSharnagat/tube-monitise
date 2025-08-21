@@ -86,15 +86,16 @@
 .metric-down {
   @apply text-red-600 dark:text-red-400;
 }
-/* Hide scrollbars utility */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-/* 
-.scrollbar-hidden::-webkit-scrollbar {
-  display: none ! important; 
-}
+@layer utilities {
+  /* Chrome, Safari, Edge ke liye */
+  .no-spinner::-webkit-outer-spin-button,
+  .no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 
-.scrollbar-hidden {
-  -ms-overflow-style: none ! important ;   
-  scrollbar-width: none ! important;  
-} */
+  /* Firefox ke liye */
+  .no-spinner[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
