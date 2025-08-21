@@ -45,8 +45,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
           <img src="/logo-removebg.png" alt="Logo" className="w-24 h-16 object-contain" />
-          <h1 className="mt-2 text-2xl font-semibold">Welcome back</h1>
-          <p className="text-sm text-muted-foreground">Sign in to access the admin panel</p>
+          {/* <h1 className="mt-2 text-2xl font-semibold">Welcome back</h1> */}
+          {/* <p className="text-sm text-muted-foreground">Sign in to access the admin panel</p> */}
         </div>
 
         <Card className="shadow-lg">
