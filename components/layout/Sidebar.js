@@ -68,7 +68,7 @@ export function Sidebar({ activeSection, setActiveSection }) {
           })}
         </div>
         
-        <Separator className="my-4" />
+        {/* <Separator className="my-4" /> */}
         
         <div className="space-y-2 pb-6 pt-2">
           {secondaryItems.map((item) => {
