@@ -1,0 +1,49 @@
+import axios from "axios";
+import { getCookie } from "cookies-next";
+import { toast } from "react-toastify";
+
+const nodeEnvironment = process.env.NEXT_PUBLIC_NODE_ENV;
+const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
+export function getServerUrl() {
+  if (nodeEnvironment === "development") {
+    return serverUrl;
+  }
+
+  if (nodeEnvironment === "machine_IP") {
+    return serverUrl;
+  }
+
+  if (nodeEnvironment === "server") {
+    return serverUrl;
+  }
+
+  return serverUrl;
+}
+
+export const communication = {
+
+    // get Video List
+  getVideoListForAdmin: async (page = 1, searchString = "") => {
+    try {
+      const requestBody = {
+        page,
+        searchString,
+      };
+
+      return await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/video/get-video-list-for-admin`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("inventryToken")}`,
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+};
