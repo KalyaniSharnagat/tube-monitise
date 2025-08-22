@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  MoreHorizontal, 
+import {
+  MoreHorizontal,
   Play,
   Eye,
   Edit,
@@ -21,21 +21,19 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { communication } from '@/services/communication';
 
-
 export function VideoManagement() {
-  const [videos, setVideos] = useState([]);
-  const [playingVideo, setPlayingVideo] = useState(null);
+const [videos, setVideos] = useState([]);
+const [playingVideo, setPlayingVideo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [searchString, setSearchString] = useState('');
-
 
   const fetchVideos = async () => {
     try {
       setLoading(true);
       const res = await communication.getVideoListForAdmin(page, searchString);
       if (res?.data?.status === 'SUCCESS') {
-        setVideos(res.data.data || []);
+        setVideos(res.data.videos || []); // 👈 API mein `videos` array hai
       } else {
         setVideos([]);
       }
@@ -47,14 +45,13 @@ export function VideoManagement() {
     }
   };
 
-
   useEffect(() => {
     fetchVideos();
   }, [page, searchString]);
 
   const handlePreview = (id) => {
-    setPlayingVideo(playingVideo === id ? null : id);
-  };
+  setPlayingVideo(playingVideo === id ? null : id);
+};
 
   return (
     <div className="space-y-6">
@@ -65,9 +62,13 @@ export function VideoManagement() {
           placeholder="Search videos..."
           value={searchString}
           onChange={(e) => setSearchString(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              fetchVideos();
+            }
+          }}
           className="border p-2 rounded-md w-1/3"
         />
-        <Button onClick={() => fetchVideos()}>Search</Button>
       </div>
 
       {/* Loading State */}
@@ -93,19 +94,23 @@ export function VideoManagement() {
                   allowFullScreen
                 />
               ) : (
-                <img 
-                  src={video.thumbnail} 
+                <img
+                  src={`https://img.youtube.com/vi/${new URL(video.videoUrl).searchParams.get("v")}/hqdefault.jpg`}
                   alt={video.title}
                   className="w-full h-48 object-cover"
                 />
               )}
 
               <div className="absolute top-2 left-2">
-                <Badge className={
-                  video.status === 'Published' ? 'bg-green-500' :
-                  video.status === 'Pending' ? 'bg-yellow-500' :
-                  'bg-red-500'
-                }>
+                <Badge
+                  className={
+                    video.status === 'uploaded'
+                      ? 'bg-yellow-500'
+                      : video.status === 'approved'
+                      ? 'bg-green-500'
+                      : 'bg-red-500'
+                  }
+                >
                   {video.status}
                 </Badge>
               </div>
@@ -115,21 +120,18 @@ export function VideoManagement() {
               <h3 className="font-semibold text-lg mb-2 line-clamp-2">{video.title}</h3>
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div className="flex items-center justify-between">
-                  <span>User: {video.User}</span>
+                  <span>Watch Times: <span className="font-medium">{video.watchTimes}</span></span>
+                  <span>Cost: <span className="text-green-600 font-medium">{video.cost}</span></span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Coin: <span className="text-green-600 font-medium">{video.coin}</span></span>
-                  <span>{video.uploadDate}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Watchtime: <span className="font-medium">{video.watchTime}</span></span>
                   <span>Play Seconds: <span className="font-medium">{video.playSeconds}</span></span>
+                  <span>{new Date(video.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between mt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => handlePreview(video.id)}
                 >
@@ -151,7 +153,7 @@ export function VideoManagement() {
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Video
                     </DropdownMenuItem>
-                    {video.status === 'Pending' && (
+                    {video.status === 'uploaded' && (
                       <>
                         <DropdownMenuItem className="text-green-600">
                           <CheckCircle className="w-4 h-4 mr-2" />
