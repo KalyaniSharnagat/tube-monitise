@@ -160,36 +160,12 @@ const users = [
     earnings: '$5,234',
     coins: 2100
   },
-    {
-    id: 3,
-    name: 'Mike Johnson',
-    email: 'mike@example.com',
-    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2',
-    role: 'Creator',
-    status: 'Suspended',
-    joinDate: '2024-01-08',
-    videos: 45,
-    earnings: '$5,234',
-    coins: 2100
-  },
-
-    {
-    id: 3,
-    name: 'Mike Johnson',
-    email: 'mike@example.com',
-    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=2',
-    role: 'Creator',
-    status: 'Suspended',
-    joinDate: '2024-01-08',
-    videos: 45,
-    earnings: '$5,234',
-    coins: 2100
-  },
+ 
 ];
 
 export function UserManagement({ currentPage, setCurrentPage }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('view'); // 'view' | 'edit' | 'delete'
+  const [modalType, setModalType] = useState('view'); // view,edit,delete
   const [selectedUser, setSelectedUser] = useState(null);
 
   const openModal = (type, user) => {
@@ -199,34 +175,26 @@ export function UserManagement({ currentPage, setCurrentPage }) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        {/* <div>
-          <h1 className="text-3xl font-bold text-foreground">User Management</h1>
-          <p className="text-muted-foreground">Manage platform users, creators, and their activities</p>
-        </div> */}
-        {/* <div className="flex space-x-3">
-          <Button variant="outline">
+    <div className="space-y-6" style={{ overflow: "hidden" }} >
+      {/* <div className="flex items-center justify-between"> */}
+        {/* <div className="flex space-x-3"> */}
+          {/* <Button variant="outline">
             <Download className="w-4 h-4 mr-2" />
             Export
-          </Button>
-          <Button className="bg-green-500 hover:bg-green-600">
+          </Button> */}
+            <Button className="bg-red-500 hover:bg-green-600">
             <UserPlus className="w-4 h-4 mr-2" />
             Add User
           </Button>
-        </div> */}
-      </div>
+        {/* </div> */}
+      {/* </div> */}
 
    
-      
+  
       {/* Users Table */}
       <Card>
-       
         <CardContent>
-          <div className="relative max-h-[60vh] overflow-auto scrollbar-hide"  style={{
-    msOverflowStyle: "none",   // IE/Edge
-    scrollbarWidth: "none"     // Firefox
-  }}>
+          <div className="relative max-h-[60vh] "  style={{ msOverflowStyle: "none", scrollbarWidth: "none"}}>
             <table className="w-full min-w-[900px] ">
               <thead className="sticky top-0 z-10 bg-white dark:bg-gray-800">
                 <tr className="border-b">
