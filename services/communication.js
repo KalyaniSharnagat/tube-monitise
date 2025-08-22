@@ -44,4 +44,91 @@ getVideoListForAdmin: async (page = 1, searchString = "") => {
     throw error;
   }
 },
-};
+ createCoinSlot: async (coins, amount) => {
+    try {
+      const requestBody = { coins: Number(coins), amount: Number(amount) };
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/create-coin-slot`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error creating coin package");
+      throw error;
+    }
+  },
+  getCoinSlotList: async ({ page, searchString }) => {
+    try {
+      const requestBody = { page, searchString };
+
+      return await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/get-coin-slot-list`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+  updateCoinSlot: async (id, coins, amount) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/update-coin-slot`,
+        {
+          id,
+          coins: Number(coins),
+          amount: Number(amount),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error updating coin package");
+      throw error;
+    }
+  },
+  deleteCoinSlot: async (slotIds) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/delete-coin-slot`,
+        {
+          slotIds, 
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error deleting coin package");
+      throw error;
+    }
+  },
+
+}
+
+
