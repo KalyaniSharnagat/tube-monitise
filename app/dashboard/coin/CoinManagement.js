@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Coins, Plus, Trash2 } from 'lucide-react';
 import { communication } from '@/services/communication';
 import { toast } from 'react-toastify';
-import { Dialog, DialogContent, DialogHeader, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FilterBar } from '@/components/common/FilterBar';
 
-
 export function CoinManagement() {
   const [coinPackages, setCoinPackages] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [filteredCoins, setFilteredCoins] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCoin, setNewCoin] = useState({ id: '', coins: '', price: '' });
@@ -20,6 +20,8 @@ export function CoinManagement() {
   const [loading, setLoading] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [coinToDelete, setCoinToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const openDeleteModal = (pkgId) => {
     setCoinToDelete(pkgId);
@@ -50,7 +52,6 @@ export function CoinManagement() {
       const res = await communication.getCoinSlotList({ page: 1, searchString: '' });
       if (res?.data?.status === 'SUCCESS') {
         setCoinPackages(res.data.slots || []);
-        setFilteredCoins(res.data.slots || []); // initialize filtered list
       } else {
         toast.warning(res.data.message || 'Failed to fetch coin packages', { position: 'top-right', autoClose: 3000 });
       }
@@ -66,18 +67,20 @@ export function CoinManagement() {
     fetchCoins();
   }, []);
 
-  // ✅ Filter / Search logic
-  const handleFilter = (searchTerm) => {
-    if (!searchTerm) {
-      setFilteredCoins(coinPackages);
-    } else {
-      const filtered = coinPackages.filter(pkg =>
-        pkg.coins.toString().includes(searchTerm) ||
-        pkg.amount.toString().includes(searchTerm)
-      );
-      setFilteredCoins(filtered);
-    }
-  };
+  // ✅ Filter and search logic
+  const filteredData = useMemo(() => {
+    return coinPackages.filter(pkg => 
+      pkg.coins.toString().includes(searchQuery) ||
+      pkg.amount.toString().includes(searchQuery)
+    );
+  }, [coinPackages, searchQuery]);
+
+  // ✅ Pagination logic
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredData.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredData, currentPage]);
 
   const handleSaveCoin = async () => {
     try {
@@ -129,61 +132,56 @@ export function CoinManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Header + Create Button */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-lg font-semibold">Coin Packages</CardTitle>
-          <Button
-            size="sm"
-            className="bg-green-500 hover:bg-green-600"
-            onClick={openCreateModal}
-          >
+        <CardHeader className="flex flex-row items-center justify-between pb-4">
+          <CardTitle className="text-lg font-semibold">Coin Management</CardTitle>
+          <Button size="sm" className="bg-green-500 hover:bg-green-600" onClick={openCreateModal}>
             <Plus className="w-4 h-4 mr-2" />
             Create Coin
           </Button>
         </CardHeader>
 
         <CardContent>
-          {/* FilterBar */}
-          <div className="mb-4">
-            <FilterBar onSearch={handleFilter} placeholder="Search coins or amount..." />
+          
+          <FilterBar
+            showSearch
+            searchPlaceholder="Search coins or amount..."
+            onSearchChange={(val) => {
+              setSearchQuery(val);
+              setCurrentPage(1);
+            }}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+
+          {/* ✅ Coin Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            {paginatedData.length > 0 ? (
+              paginatedData.map((pkg) => (
+                <Card key={pkg.id} className="relative border-2 border-green-500 w-60 h-54 mx-auto">
+                  <button
+                    onClick={() => openDeleteModal(pkg.id)}
+                    className="absolute top-2 right-2 text-red-500 hover:text-red-600"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+
+                  <CardContent className="p-4 text-center">
+                    <div className="w-12 h-12 mx-auto mb-3 bg-yellow-100 rounded-full flex items-center justify-center">
+                      <Coins className="w-6 h-6 text-yellow-600" />
+                    </div>
+                    <p className="text-2xl font-bold text-yellow-600 mb-1">{pkg.coins}</p>
+                    <p className="text-xs text-muted-foreground mb-2">coins</p>
+                    <p className="text-xl font-bold text-green-600 mb-3">${pkg.amount}</p>
+                    <Button variant="outline" size="sm" onClick={() => openEditModal(pkg)}>Edit</Button>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <p className="text-center col-span-full text-gray-500 mt-6">No coins found.</p>
+            )}
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {filteredCoins.map((pkg) => (
-              <Card
-                key={pkg.id}
-                className="relative border-2 border-green-500 w-60 h-54 mx-auto"
-              >
-                <button
-                  onClick={() => openDeleteModal(pkg.id)}
-                  className="absolute top-2 right-2 text-red-500 hover:text-red-600"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-
-                <CardContent className="p-4 text-center">
-                   <div className="w-12 h-12 mx-auto mb-3 bg-yellow-100 rounded-full flex items-center justify-center">
-                   <Coins className="w-6 h-6 text-yellow-600" />
-               </div>
-               <p className="text-2xl font-bold text-yellow-600 mb-1">{pkg.coins}</p>
-               <p className="text-xs text-muted-foreground mb-2">coins</p>
-               <p className="text-xl font-bold text-green-600 mb-3">${pkg.amount}</p>
-               <div className="flex space-x-2">
-                   <Button
-                       className="flex-1"
-                       variant="outline"
-                       size="sm"
-                       onClick={() => openEditModal(pkg)}
-                   >
-                       Edit
-                   </Button>
-               </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
         </CardContent>
       </Card>
 
@@ -191,10 +189,7 @@ export function CoinManagement() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-80">
-            <h3 className="text-lg font-semibold mb-4">
-              {isEditing ? 'Edit Coin Package' : 'Add New Coin'}
-            </h3>
-
+            <h3 className="text-lg font-semibold mb-4">{isEditing ? 'Edit Coin Package' : 'Add New Coin'}</h3>
             <Input
               placeholder="Coins"
               type="number"
@@ -209,11 +204,8 @@ export function CoinManagement() {
               onChange={(e) => setNewCoin({ ...newCoin, price: parseFloat(e.target.value) })}
               className="mb-3 no-spinner"
             />
-
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
-                Cancel
-              </Button>
+              <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
               <Button onClick={handleSaveCoin}>{isEditing ? 'Update' : 'Create'}</Button>
             </div>
           </div>
@@ -223,33 +215,16 @@ export function CoinManagement() {
       {/* Delete Confirmation Modal */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent className="p-0 overflow-hidden rounded-lg max-w-sm w-full">
-          <div
-            className="text-white flex justify-between items-center px-4 py-2"
-            style={{ backgroundColor: '#2ea984' }}
-          >
+          <div className="text-white flex justify-between items-center px-4 py-2" style={{ backgroundColor: '#2ea984' }}>
             <h3 className="font-semibold text-lg">Delete Confirmation</h3>
-            <button
-              className="text-white text-xl font-bold"
-              onClick={() => setDeleteModalOpen(false)}
-            >
-              ×
-            </button>
+            <button className="text-white text-xl font-bold" onClick={() => setDeleteModalOpen(false)}>×</button>
           </div>
-
           <div className="p-4 text-center">
             <p className="text-gray-700">Are you sure you want to delete this coin?</p>
           </div>
           <DialogFooter className="flex justify-center gap-4 p-4">
-            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              style={{ backgroundColor: '#2ea984' }}
-              className="hover:opacity-90 text-white"
-              onClick={confirmDeleteCoin}
-            >
-              Delete
-            </Button>
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
+            <Button style={{ backgroundColor: '#2ea984' }} className="hover:opacity-90 text-white" onClick={confirmDeleteCoin}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
