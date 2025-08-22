@@ -29,7 +29,7 @@ export function Header({ activeSection }) {
   return (
     <header className="h-16 bg-white dark:bg-gray-800 border-b border-border shadow-sm">
       <div className="flex items-center justify-between h-full px-6">
-        <h2 className="text-xl font-semibold text-foreground">{getSectionTitle()}</h2>
+        <h2 className="text-xl font-semibold text-foreground"></h2>
 
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="icon" className="relative">
