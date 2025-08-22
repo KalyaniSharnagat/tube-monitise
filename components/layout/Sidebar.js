@@ -10,6 +10,7 @@ import {
   CreditCard,
   MessageSquare,
   LogOut,
+  
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -18,6 +19,7 @@ const menuItems = [
   { id: 'videos', label: 'Video Management', icon: Video, path: '/dashboard/videomange' },
   { id: 'coins', label: 'Coin Management', icon: Coins, path: '/dashboard/coin' },
   { id: 'transactions', label: 'Transaction', icon: CreditCard, path: '/dashboard/transaction' },
+  { id: 'notification', label: 'Notification', icon: CreditCard, path: '/dashboard/notificationmange' },
   { id: 'contacts', label: 'Contact', icon: MessageSquare, path: '/dashboard/contact' },
 ];
 
@@ -25,7 +27,7 @@ export function Sidebar({ activeSection, setActiveSection }) {
   const router = useRouter();
 
   return (
-    <div className="fixed inset-y-0 left-0 w-56 h-screen bg-white dark:bg-gray-800 border-r border-border shadow-lg flex flex-col">
+    <div className=" w-56 h-screen bg-white dark:bg-gray-800 border-r border-border shadow-lg flex flex-col">
       <div className="px-0 py-1">
         <div className="w-full flex justify-center">
           <img 

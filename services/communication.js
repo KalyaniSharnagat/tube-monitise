@@ -21,6 +21,8 @@ export function getServerUrl() {
 
   return serverUrl;
 }
+
+// Export communication object with APIs
 export const communication = {
   // Get Video List
   getVideoListForAdmin: async (page = 1, searchString = "") => {
@@ -64,12 +66,12 @@ export const communication = {
   },
 
   // Get User List
-  getUserList: async ({ id = "", page, searchString = "" } = {}) => {
+  getUserList: async ({ id = "", page = 1, searchString = "" } = {}) => {
   try {
     const requestBody = { id, page, searchString };
 
     const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/user/get-user-list-for-admin`,
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/user/get-user-list`,
       requestBody,
       {
         headers: {

@@ -33,7 +33,7 @@ export function VideoManagement() {
       setLoading(true);
       const res = await communication.getVideoListForAdmin(page, searchString);
       if (res?.data?.status === 'SUCCESS') {
-        setVideos(res.data.videos || []); // 👈 API mein `videos` array hai
+        setVideos(res.data.videos || []);
       } else {
         setVideos([]);
       }
@@ -51,7 +51,6 @@ export function VideoManagement() {
       if (videoId) {
         return `https://www.youtube.com/embed/${videoId}`;
       }
-      // अगर short link (youtu.be/VIDEOID) है
       const pathname = new URL(url).pathname;
       if (pathname) {
         return `https://www.youtube.com/embed/${pathname.replace("/", "")}`;
@@ -110,7 +109,6 @@ export function VideoManagement() {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
-
               ) : (
                 <img
                   src={`https://img.youtube.com/vi/${new URL(getYoutubeEmbedUrl(video.videoUrl)).pathname.split("/").pop()}/hqdefault.jpg`}
@@ -136,14 +134,22 @@ export function VideoManagement() {
 
             <CardContent className="p-4">
               <h3 className="font-semibold text-lg mb-2 line-clamp-2">{video.title}</h3>
+
               <div className="space-y-2 text-sm text-muted-foreground">
+
                 <div className="flex items-center justify-between">
-                  <span>Watch Times: <span className="font-medium">{video.watchTimes}</span></span>
-                  <span>Cost: <span className="text-green-600 font-medium">{video.cost}</span></span>
+                  <span>User: <span className="font-medium">{video.userName}</span></span>
+                  <span>Email: <span className="font-medium">{video.userEmail}</span></span>
                 </div>
+
                 <div className="flex items-center justify-between">
-                  <span>Play Seconds: <span className="font-medium">{video.playSeconds}</span></span>
-                  <span>{new Date(video.createdAt).toLocaleDateString()}</span>
+                  <span>Watch Times: <span className="font-medium">{video.watchTimes}</span>  times</span>
+                  <span>Cost: ₹<span className="text-green-600 font-medium">{video.cost}</span></span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span>Play Seconds: <span className="font-medium">{video.playSeconds}</span> sec</span>
+                  <span>Created Date: <span>{new Date(video.createdAt).toLocaleDateString()}</span></span>
                 </div>
               </div>
 
