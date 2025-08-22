@@ -21,27 +21,69 @@ export function getServerUrl() {
 
   return serverUrl;
 }
-
 export const communication = {
+  // Get Video List
+  getVideoListForAdmin: async (page = 1, searchString = "") => {
+    try {
+      const requestBody = { page, searchString };
 
-    // get Video List
-getVideoListForAdmin: async (page = 1, searchString = "") => {
+      return await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/video/get-video-list-for-admin`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`, // same as login
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+
+  // Create User
+  createUser: async (userData) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/user/create-user`,
+        userData, 
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+      return response;
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error.message);
+      throw error;
+    }
+  },
+
+  // Get User List
+  getUserList: async ({ id = "", page, searchString = "" } = {}) => {
   try {
-    const requestBody = { page, searchString };
+    const requestBody = { id, page, searchString };
 
-    return await axios.post(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/video/get-video-list-for-admin`,
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/user/get-user-list-for-admin`,
       requestBody,
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getCookie("auth")}`, // 👈 same as login
+          Authorization: `Bearer ${getCookie("auth")}`,
         },
       }
     );
+
+    return response;
   } catch (error) {
-    toast.error(error.message);
+    toast.error(error?.response?.data?.message || error.message);
     throw error;
   }
 },
+
 };
