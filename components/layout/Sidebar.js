@@ -10,6 +10,7 @@ import {
   CreditCard,
   MessageSquare,
   LogOut,
+  
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -18,6 +19,7 @@ const menuItems = [
   { id: 'videos', label: 'Video Management', icon: Video, path: '/dashboard/videomange' },
   { id: 'coins', label: 'Coin Management', icon: Coins, path: '/dashboard/coin' },
   { id: 'transactions', label: 'Transaction', icon: CreditCard, path: '/dashboard/transaction' },
+  { id: 'notification', label: 'Notification', icon: CreditCard, path: '/dashboard/notificationmange' },
   { id: 'contacts', label: 'Contact', icon: MessageSquare, path: '/dashboard/contact' },
 ];
 

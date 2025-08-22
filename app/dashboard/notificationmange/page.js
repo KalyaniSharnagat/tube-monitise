@@ -1,11 +1,11 @@
 import React from "react";
 import Layout from "../../../components/layout/Layout";
-import { ContactManagement } from "./ContactManagement";
+import { Notification} from "./Notification";
 
 function Page() {
   return (
     <Layout>
-      <ContactManagement/>
+      <Notification/>
     </Layout>
   );
 }
