@@ -22,60 +22,20 @@ export function getServerUrl() {
   return serverUrl;
 }
 
+// Export communication object with APIs
 export const communication = {
-
-    // get Video List
-getVideoListForAdmin: async (page = 1, searchString = "") => {
-  try {
-    const requestBody = { page, searchString };
-
-    return await axios.post(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/video/get-video-list-for-admin`,
-      requestBody,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getCookie("auth")}`, 
-        },
-      }
-    );
-  } catch (error) {
-    toast.error(error.message);
-    throw error;
-  }
-},
- createCoinSlot: async (coins, amount) => {
-    try {
-      const requestBody = { coins: Number(coins), amount: Number(amount) };
-
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/create-coin-slot`,
-        requestBody,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-
-      return response;
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error creating coin package");
-      throw error;
-    }
-  },
-  getCoinSlotList: async ({ page, searchString }) => {
+  // Get Video List
+  getVideoListForAdmin: async (page = 1, searchString = "") => {
     try {
       const requestBody = { page, searchString };
 
       return await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/get-coin-slot-list`,
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/video/get-video-list-for-admin`,
         requestBody,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
+            Authorization: `Bearer ${getCookie("auth")}`, // same as login
           },
         }
       );
@@ -84,15 +44,13 @@ getVideoListForAdmin: async (page = 1, searchString = "") => {
       throw error;
     }
   },
-  updateCoinSlot: async (id, coins, amount) => {
+
+  // Create User
+  createUser: async (userData) => {
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/update-coin-slot`,
-        {
-          id,
-          coins: Number(coins),
-          amount: Number(amount),
-        },
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/user/create-user`,
+        userData, 
         {
           headers: {
             "Content-Type": "application/json",
@@ -100,59 +58,34 @@ getVideoListForAdmin: async (page = 1, searchString = "") => {
           },
         }
       );
-
       return response;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error updating coin package");
-      throw error;
-    }
-  },
-  deleteCoinSlot: async (slotIds) => {
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/delete-coin-slot`,
-        {
-          slotIds, 
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-
-      return response;
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error deleting coin package");
+      toast.error(error?.response?.data?.message || error.message);
       throw error;
     }
   },
 
-}
-
-
-
-//  get contact list
-
-getQueryList: async (page = 1, searchString = "") => {
+  // Get User List
+  getUserList: async ({ id = "", page, searchString = "" } = {}) => {
   try {
-    const requestBody = { page, searchString };
+    const requestBody = { id, page, searchString };
 
-    return await axios.post(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/get-query-list`,
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/user/get-user-list-for-admin`,
       requestBody,
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getCookie("auth")}`, 
+          Authorization: `Bearer ${getCookie("auth")}`,
         },
       }
     );
+
+    return response;
   } catch (error) {
-    toast.error(error.message);
+    toast.error(error?.response?.data?.message || error.message);
     throw error;
   }
-}
+},
 
-
+};
