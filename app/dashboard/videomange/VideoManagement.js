@@ -22,8 +22,8 @@ import {
 import { communication } from '@/services/communication';
 
 export function VideoManagement() {
-const [videos, setVideos] = useState([]);
-const [playingVideo, setPlayingVideo] = useState(null);
+  const [videos, setVideos] = useState([]);
+  const [playingVideo, setPlayingVideo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [searchString, setSearchString] = useState('');
@@ -45,13 +45,30 @@ const [playingVideo, setPlayingVideo] = useState(null);
     }
   };
 
+  const getYoutubeEmbedUrl = (url) => {
+    try {
+      const videoId = new URL(url).searchParams.get("v");
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+      // अगर short link (youtu.be/VIDEOID) है
+      const pathname = new URL(url).pathname;
+      if (pathname) {
+        return `https://www.youtube.com/embed/${pathname.replace("/", "")}`;
+      }
+      return url;
+    } catch {
+      return url;
+    }
+  };
+
   useEffect(() => {
     fetchVideos();
   }, [page, searchString]);
 
   const handlePreview = (id) => {
-  setPlayingVideo(playingVideo === id ? null : id);
-};
+    setPlayingVideo(playingVideo === id ? null : id);
+  };
 
   return (
     <div className="space-y-6">
@@ -87,15 +104,16 @@ const [playingVideo, setPlayingVideo] = useState(null);
               {playingVideo === video.id ? (
                 <iframe
                   className="w-full h-full"
-                  src={`${video.videoUrl}?autoplay=1`}
+                  src={`${getYoutubeEmbedUrl(video.videoUrl)}?autoplay=1`}
                   title={video.title}
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
+
               ) : (
                 <img
-                  src={`https://img.youtube.com/vi/${new URL(video.videoUrl).searchParams.get("v")}/hqdefault.jpg`}
+                  src={`https://img.youtube.com/vi/${new URL(getYoutubeEmbedUrl(video.videoUrl)).pathname.split("/").pop()}/hqdefault.jpg`}
                   alt={video.title}
                   className="w-full h-48 object-cover"
                 />
@@ -107,8 +125,8 @@ const [playingVideo, setPlayingVideo] = useState(null);
                     video.status === 'uploaded'
                       ? 'bg-yellow-500'
                       : video.status === 'approved'
-                      ? 'bg-green-500'
-                      : 'bg-red-500'
+                        ? 'bg-green-500'
+                        : 'bg-red-500'
                   }
                 >
                   {video.status}
