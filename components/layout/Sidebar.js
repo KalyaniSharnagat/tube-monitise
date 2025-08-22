@@ -27,7 +27,7 @@ export function Sidebar({ activeSection, setActiveSection }) {
   const router = useRouter();
 
   return (
-    <div className="fixed inset-y-0 left-0 w-56 h-screen bg-white dark:bg-gray-800 border-r border-border shadow-lg flex flex-col">
+    <div className=" w-56 h-screen bg-white dark:bg-gray-800 border-r border-border shadow-lg flex flex-col">
       <div className="px-0 py-1">
         <div className="w-full flex justify-center">
           <img 
