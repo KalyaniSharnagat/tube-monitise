@@ -66,12 +66,12 @@ export const communication = {
   },
 
   // Get User List
-  getUserList: async ({ id = "", page = 1, searchString = "" } = {}) => {
+  getUserList: async ({ id = "", page, searchString = "" } = {}) => {
   try {
     const requestBody = { id, page, searchString };
 
     const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/user/get-user-list`,
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/user/get-user-list-for-admin`,
       requestBody,
       {
         headers: {
