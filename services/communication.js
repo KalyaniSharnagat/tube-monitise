@@ -35,7 +35,7 @@ getVideoListForAdmin: async (page = 1, searchString = "") => {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getCookie("auth")}`, // 👈 same as login
+          Authorization: `Bearer ${getCookie("auth")}`, 
         },
       }
     );
@@ -129,6 +129,30 @@ getVideoListForAdmin: async (page = 1, searchString = "") => {
     }
   },
 
+}
+
+
+
+//  get contact list
+
+getQueryList: async (page = 1, searchString = "") => {
+  try {
+    const requestBody = { page, searchString };
+
+    return await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/get-query-list`,
+      requestBody,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("auth")}`, 
+        },
+      }
+    );
+  } catch (error) {
+    toast.error(error.message);
+    throw error;
+  }
 }
 
 
