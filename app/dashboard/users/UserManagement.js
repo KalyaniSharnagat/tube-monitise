@@ -1,144 +1,278 @@
 'use client';
 
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { UserPlus, Eye, Edit, Trash2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { communication } from "@/services/communication"; // updated import
+import { Eye, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { communication } from "@/services/communication";
+import { toast } from "react-toastify";
+import { FilterBar } from "@/components/common/FilterBar";
 
-export function UserManagement({ currentPage, setCurrentPage }) {
+export function UserManagement() {
   const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState("view");
   const [selectedUser, setSelectedUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newUser, setNewUser] = useState({
-    name: "",
-    email: "",
-    referralId: "",
-    status: "Active",
-    joinDate: new Date().toISOString().slice(0, 10),
-    videos: 0,
-    earnings: "$0",
-    coins: 0,
-    googleId: "",
-  });
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [userToToggleStatus, setUserToToggleStatus] = useState(null);
 
-  const [editedUser, setEditedUser] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);  //delete
+  const [userToDelete, setUserToDelete] = useState(null);
+
+  // Filter and search 
+  const filteredData = useMemo(() => {
+    return users.filter(user =>
+      user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [users, searchQuery]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredData.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredData, currentPage, itemsPerPage]);
 
   const fetchUsers = async () => {
     try {
-      console.log("jayshree")
-      let id = "";
-      let page = 1;
-      let searchString = "";
-      const res = await communication.getUserList(id, page, searchString);
-      setUsers(res.data.users || []);
+      const res = await communication.getUserList({ id: "", page: 1, searchString: "" });
+      const usersWithStatus = (res.data.users || []).map(user => ({
+        ...user,
+        status: user.status || "Active"
+      }));
+      setUsers(usersWithStatus);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to fetch users.");
     }
   };
-  // Fetch users
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const openModal = (type, user) => {
-    setModalType(type);
+  // View modal
+  const openViewModal = (user) => {
     setSelectedUser(user);
-    if (type === "edit") setEditedUser({ ...user });
     setIsModalOpen(true);
   };
 
-  // Edit handlers
-  const handleEditChange = (e) => {
-    const { name, value, type } = e.target;
-    setEditedUser(prev => ({ ...prev, [name]: type === "number" ? parseInt(value) : value }));
+  // Status toggle modal
+  const openStatusModal = (user) => {
+    setUserToToggleStatus(user);
+    setStatusModalOpen(true);
   };
 
-  const handleEditSelectChange = (name, value) => {
-    setEditedUser(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSaveChanges = async () => {
+  const confirmToggleStatus = async () => {
+    if (!userToToggleStatus) return;
+    const newStatus = userToToggleStatus.status === "Active" ? "Inactive" : "Active";
     try {
-      await communication.updateUser(editedUser.id, editedUser);
-      setUsers(users.map(u => (u.id === editedUser.id ? editedUser : u)));
-      setIsModalOpen(false);
+      const res = await communication.updateUser(userToToggleStatus.userIds, {
+        ...userToToggleStatus,
+        status: newStatus
+      });
+      if (res?.data?.status === "SUCCESS") {
+        toast.success(`User status updated to "${newStatus}"!`);
+        fetchUsers();
+      } else {
+        toast.warning(res.data.message || "Failed to update user status.");
+      }
     } catch (err) {
       console.error(err);
+      toast.error("Something went wrong while updating user status.");
+    } finally {
+      setStatusModalOpen(false);
+      setUserToToggleStatus(null);
     }
   };
 
-  // Delete handler
-  const handleDelete = async (userId) => {
+  // Delete modal
+  const openDeleteModal = (userId) => {
+    setUserToDelete(userId);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDeleteUser = async () => {
     try {
-      await communication.deleteUser(userId);
-      setUsers(users.filter(u => u.id !== userId));
-      setIsModalOpen(false);
-    } catch (err) {
-      console.error(err);
+
+      const res = await communication.deleteSelectedUser([userToDelete]);
+      if (res?.data?.status === "SUCCESS") {
+        toast.success("User deleted successfully!");
+        fetchUsers();
+      }
+      else {
+        toast.warning(res.data.message || "Failed to delete")
+      }
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while");
+    } finally {
+      setDeleteModalOpen(false);
+      setUserToDelete(null);
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Users Table */}
       <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-4">
+          <CardTitle className="text-lg font-semibold">User Management</CardTitle>
+        </CardHeader>
         <CardContent>
-          <div className="relative overflow-auto max-h-[60vh] custom-scrollbar">
-            <table className="w-full min-w-[900px]">
+          {/* Filter and Pagination  */}
+          <FilterBar
+            showSearch
+            searchPlaceholder="Search users..."
+            onSearchChange={(val) => { setSearchQuery(val); setCurrentPage(1); }}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+          <div className="w-full overflow-x-auto max-h-[500px] ">
+            <table className="min-w-[900px] border-collapse">
+              {/* Table Head */}
               <thead className="sticky top-0 z-10 bg-white dark:bg-gray-800">
                 <tr className="border-b">
-                  <th className="text-left p-4 font-medium">Sr.No.</th>
-                  <th className="text-left p-4 font-medium">User</th>
-                  <th className="text-left p-4 font-medium">Email</th>
-                  <th className="text-left p-4 font-medium">Google Id</th>
-                  <th className="text-left p-4 font-medium">Referral Id</th>
-                  <th className="text-left p-4 font-medium">Join Date</th>
-                  <th className="text-left p-4 font-medium">Videos</th>
-                  <th className="text-left p-4 font-medium">Coins</th>
-                  <th className="text-left p-4 font-medium">Actions</th>
+                  <th className="p-3 text-center">Sr.No.</th>
+                  <th className="p-3 text-center">User</th>
+                  <th className="p-3 text-center">Email</th>
+                  <th className="p-3 text-center">Google Id</th>
+                  <th className="p-3 text-center">Referral Id</th>
+                  <th className="p-3 text-center">Join Date</th>
+                  <th className="p-3 text-center">Videos</th>
+                  <th className="p-3 text-center">Coins</th>
+                  <th className="p-3 text-center">Actions</th>
                 </tr>
               </thead>
+
+              {/* Table Body */}
               <tbody>
-                {users.map((user, index) => (
-                  <tr key={user.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="p-4">{index + 1}</td>
-                    <td className="p-4">{user.name}</td>
-                    <td className="p-4"><Badge variant="outline">{user.email}</Badge></td>
-                    <td className="p-4 font-medium">{user.referralCode}</td>
-                    <td className="p-4 font-medium">{user.googleId}</td>
-                    
-                    <td className="p-4 text-sm text-muted-foreground">{user.createdAt}</td>
-                    <td className="p-4 font-medium">{user.videos}--</td>
-                    <td className="p-4 font-medium">{user.coins}--</td>
-                    <td className="p-4 flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openModal("view", user)}>
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => openModal("edit", user)}>
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => openModal("delete", user)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                {paginatedData.length > 0 ? (
+                  paginatedData.map((user, index) => (
+                    <tr key={user.userIds} className="hover:bg-gray-50 transition-colors">
+                      <td className="p-3 text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                      <td className="p-3 whitespace-nowrap">{user.name}</td>
+                      <td className="p-3 whitespace-nowrap">{user.email}</td>
+                      <td className="p-3">{user.googleId}</td>
+                      <td className="p-3">{user.referralCode}</td>
+                      <td className="p-3 text-sm text-gray-500">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="p-3">{user.videos}--</td>
+                      <td className="p-3">{user.coins}--</td>
+                      <td className="p-3 flex gap-2 items-center justify-center">
+                        {/* Eye button */}
+                        <Button variant="ghost" size="icon" onClick={() => openViewModal(user)} className="hover:bg-gray-100">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+
+                        {/* Status toggle */}
+                        <Button
+                          onClick={() => openStatusModal(user)}
+                          className={`relative inline-flex h-4 w-8 items-center rounded-full border transition-colors 
+                ${user.status === 'Active' ? 'border-black' : 'border-gray-400'}`}
+                        >
+                          <span
+                            className={`inline-block h-3 w-3 transform rounded-full bg-black transition-transform
+                  ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
+                          />
+                        </Button>
+
+                        {/* Delete button */}
+                        <Button variant="ghost" size="icon" onClick={() => openDeleteModal(user.id)} className="hover:bg-gray-100">
+                          <Trash2 className="w-4 h-4 text-gray-600" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="9" className="text-center py-4 text-gray-500">
+                      No users found.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
+
+
         </CardContent>
       </Card>
 
-      {/* Modals */}
-      
+      {/* View Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>User Details</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-4">
+              <div><strong>Name:</strong> {selectedUser.name}</div>
+              <div><strong>Email:</strong> {selectedUser.email}</div>
+              <div><strong>Google ID:</strong> {selectedUser.googleId}</div>
+              <div><strong>Referral ID:</strong> {selectedUser.referralCode}</div>
+              <div><strong>Status:</strong> <Badge>{selectedUser.status || "Inactive"}</Badge></div>
+              <div><strong>Join Date:</strong> {new Date(selectedUser.createdAt).toLocaleDateString()}</div>
+              <div><strong>Videos:</strong> {selectedUser.videos}</div>
+              <div><strong>Coins:</strong> {selectedUser.coins}</div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Modal */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent className="p-0 overflow-hidden rounded-lg max-w-sm w-full">
+          <div className="text-white flex justify-between items-center px-4 py-2 bg-red-600">
+            <h3 className="font-semibold text-lg">Delete Confirmation</h3>
+            <button
+              className="text-white text-xl font-bold"
+              onClick={() => setDeleteModalOpen(false)}
+            >
+              ×
+            </button>
+          </div>
+          <div className="p-4 text-center">
+            <p className="text-gray-700">
+              Are you sure you want to delete <strong>{userToDelete?.name}</strong>?
+            </p>
+          </div>
+          <DialogFooter className="flex justify-center gap-4 p-4">
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDeleteUser}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Status Toggle  Modal */}
+      <Dialog open={statusModalOpen} onOpenChange={setStatusModalOpen}>
+        <DialogContent className="p-0 overflow-hidden rounded-lg max-w-sm w-full">
+          <div className={`text-white flex justify-between items-center px-4 py-2 ${userToToggleStatus?.status === 'Active' ? 'bg-red-600' : 'bg-blue-500'}`}>
+            <h3 className="font-semibold text-lg">Confirm Status Change</h3>
+            <button className="text-white text-xl font-bold" onClick={() => setStatusModalOpen(false)}>×</button>
+          </div>
+          <div className="p-4 text-center">
+            <p className="text-gray-700">
+              Are you sure you want to {userToToggleStatus?.status === 'Active' ? 'disable' : 'enable'} the user {userToToggleStatus?.name}?
+            </p>
+          </div>
+          <DialogFooter className="flex justify-center gap-4 p-4">
+            <Button variant="outline" onClick={() => setStatusModalOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmToggleStatus}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
