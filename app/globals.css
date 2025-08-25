@@ -34,7 +34,7 @@
     --warning: 43 74% 66%;
     --warning-foreground: 0 0% 9%;
   }
-  .dark {
+  /* .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
     --card: 0 0% 3.9%;
@@ -59,7 +59,7 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-  }
+  } */
 }
 
 @layer base {
@@ -75,9 +75,9 @@
   @apply bg-primary text-primary-foreground;
 }
 
-.stats-card {
+/* .stats-card {
   @apply bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-200;
-}
+} */
 
 .metric-up {
   @apply text-green-600 dark:text-green-400;
@@ -99,3 +99,112 @@
     -moz-appearance: textfield;
   }
 }
+
+
+/* Hide scrollbar but allow scroll
+.custom-scrollbar {
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  display: none; Chrome, Safari
+} */
+
+
+/* Hide scrollbar but keep scroll functional */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+
+
+/* usermanagement.css */
+
+/* ---- Default (large screens / desktops) ---- */
+.usermanagement-table-container {
+  max-height: 500px;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.usermanagement-table {
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.usermanagement-table th,
+.usermanagement-table td {
+  padding: 12px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ---- Large Laptop (1200px and below) ---- */
+@media (max-width: 1200px) {
+  .usermanagement-table {
+    min-width: 800px;
+  }
+
+  .usermanagement-table th,
+  .usermanagement-table td {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+
+/* ---- Medium Laptop / Tablets Landscape (992px and below) ---- */
+@media (max-width: 992px) {
+  .usermanagement-table {
+    min-width: 700px;
+  }
+
+  .usermanagement-table th,
+  .usermanagement-table td {
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .usermanagement-table-container {
+    max-height: 400px;
+  }
+}
+
+/* ---- Small Laptop / Tablets Portrait (768px and below) ---- */
+@media (max-width: 768px) {
+  .usermanagement-table {
+    min-width: 600px;
+    font-size: 12px;
+  }
+
+  .usermanagement-table th,
+  .usermanagement-table td {
+    padding: 6px;
+  }
+
+  .usermanagement-table td .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+/* ---- Mobile (576px and below) ---- */
+@media (max-width: 576px) {
+  .usermanagement-table {
+    min-width: 500px;
+  }
+
+  .usermanagement-table-container {
+    max-height: 300px;
+  }
+
+  .usermanagement-table th,
+  .usermanagement-table td {
+    padding: 5px;
+    font-size: 11px;
+  }
+}
+

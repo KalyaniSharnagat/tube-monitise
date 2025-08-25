@@ -172,5 +172,32 @@ export const communication = {
     }
   },
 
+  deleteSelectedUser: async (userIds) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/user/delete-selected-user`,
+        {
+          userIds, 
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error deleting coin package");
+      throw error;
+    }
+  },
+
+
+
 }
+
+//delete user
+
 
