@@ -22,6 +22,84 @@ export function getServerUrl() {
   return serverUrl;
 }
 
+// ---- Simple Global Loader using Axios interceptors (client-only) ----
+let interceptorInitialized = false;
+let activeAxiosRequests = 0;
+
+function ensureLoaderElement() {
+  if (typeof window === "undefined") return null;
+  let el = document.getElementById("__global_api_loader");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "__global_api_loader";
+    el.style.position = "fixed";
+    el.style.inset = "0";
+    el.style.display = "none";
+    el.style.alignItems = "center";
+    el.style.justifyContent = "center";
+    el.style.background = "rgba(0,0,0,0.3)";
+    el.style.zIndex = "1000";
+
+    const spinner = document.createElement("div");
+    spinner.style.width = "40px";
+    spinner.style.height = "40px";
+    spinner.style.border = "4px solid rgba(255,255,255,0.4)";
+    spinner.style.borderTopColor = "#fff";
+    spinner.style.borderRadius = "9999px";
+    spinner.style.animation = "spin 1s linear infinite";
+
+    // basic keyframes
+    const styleTag = document.createElement("style");
+    styleTag.innerHTML = `@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`;
+    document.head.appendChild(styleTag);
+
+    el.appendChild(spinner);
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+function showLoader() {
+  const el = ensureLoaderElement();
+  if (!el) return;
+  el.style.display = "flex";
+}
+
+function hideLoader() {
+  const el = ensureLoaderElement();
+  if (!el) return;
+  el.style.display = "none";
+}
+
+function initAxiosLoaderInterceptor() {
+  if (interceptorInitialized || typeof window === "undefined") return;
+  interceptorInitialized = true;
+
+  axios.interceptors.request.use((config) => {
+    activeAxiosRequests += 1;
+    // small debounce via microtask timing handled implicitly by multiple requests
+    showLoader();
+    return config;
+  }, (error) => {
+    return Promise.reject(error);
+  });
+
+  axios.interceptors.response.use((response) => {
+    activeAxiosRequests = Math.max(0, activeAxiosRequests - 1);
+    if (activeAxiosRequests === 0) hideLoader();
+    return response;
+  }, (error) => {
+    activeAxiosRequests = Math.max(0, activeAxiosRequests - 1);
+    if (activeAxiosRequests === 0) hideLoader();
+    return Promise.reject(error);
+  });
+}
+
+// Initialize on module load in the browser
+if (typeof window !== "undefined") {
+  initAxiosLoaderInterceptor();
+}
+
 // Export communication object with APIs
 export const communication = {
   // Get Video List
