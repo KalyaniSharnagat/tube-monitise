@@ -164,6 +164,27 @@ export const communication = {
     toast.error(error?.response?.data?.message || error.message);
     throw error;
   }
+},  
+
+  // Get Query List
+getQueryList: async (page = 1, searchString = "") => {
+  try {
+    const requestBody = { page, searchString };
+
+    return await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/get-query-list`,
+      requestBody,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("auth")}`, 
+        },
+      }
+    );
+  } catch (error) {
+    toast.error(error.message);
+    throw error;
+  }
 },
  createCoinSlot: async (coins, amount) => {
     try {
@@ -275,7 +296,4 @@ export const communication = {
 
 
 }
-
-//delete user
-
 
