@@ -7,8 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import {
   MoreHorizontal,
   Play,
-  Eye,
-  Edit,
   Trash2,
   CheckCircle,
   XCircle,
@@ -19,7 +17,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { communication } from '@/services/communication';
+import { toast } from 'react-hot-toast';
 
 export function VideoManagement() {
   const [videos, setVideos] = useState([]);
@@ -27,6 +33,8 @@ export function VideoManagement() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [searchString, setSearchString] = useState('');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedVideoId, setSelectedVideoId] = useState(null);
 
   const fetchVideos = async () => {
     try {
@@ -67,6 +75,48 @@ export function VideoManagement() {
 
   const handlePreview = (id) => {
     setPlayingVideo(playingVideo === id ? null : id);
+  };
+
+  // ✅ Change Status Handler
+  // ✅ Change Status Handler
+  const handleChangeStatus = async (videoId, newStatus) => {
+    try {
+      const res = await communication.changeVideoStatus(videoId, newStatus);
+
+      if (res?.data?.status === "SUCCESS") {
+        toast.success(`Video ${newStatus} successfully`);
+
+        // ✅ Local update without refetch
+        setVideos((prev) =>
+          prev.map((v) =>
+            v.id === videoId ? { ...v, status: newStatus } : v
+          )
+        );
+      } else {
+        toast.error(res?.data?.message || "Failed to change status");
+      }
+    } catch (err) {
+      toast.error("Error changing status");
+    }
+  };
+
+
+  const handleDeleteConfirm = async () => {
+    try {
+      if (!selectedVideoId) return;
+      const res = await communication.deleteVideo([selectedVideoId]);
+      if (res?.data?.status === 'SUCCESS') {
+        toast.success('Video deleted successfully');
+        fetchVideos();
+      } else {
+        toast.error(res?.data?.message || 'Failed to delete video');
+      }
+    } catch (err) {
+      toast.error('Error deleting video');
+    } finally {
+      setDeleteModalOpen(false);
+      setSelectedVideoId(null);
+    }
   };
 
   return (
@@ -117,14 +167,36 @@ export function VideoManagement() {
                 />
               )}
 
+              {/* ✅ Status Button on Thumbnail */}
+              {/* <div className="absolute top-2 ps-2">
+                {video.status === "active" ? (
+                  <Button
+                    size="sm"
+                    className="bg-green-600 text-white hover:bg-green-700"
+                    onClick={() => handleChangeStatus(video.id, "inactive")}
+                  >
+                    Disable
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    className="bg-red-600 text-white hover:bg-red-700"
+                    onClick={() => handleChangeStatus(video.id, "active")}
+                  >
+                    Enable
+                  </Button>
+                )}
+              </div> */}
+
+
+
+              {/* Status Badge Left Side */}
               <div className="absolute top-2 left-2">
                 <Badge
                   className={
-                    video.status === 'uploaded'
-                      ? 'bg-yellow-500'
-                      : video.status === 'approved'
-                        ? 'bg-green-500'
-                        : 'bg-red-500'
+                    video.status === 'active'
+                      ? 'bg-green-500'
+                      : 'bg-red-500'
                   }
                 >
                   {video.status}
@@ -136,14 +208,13 @@ export function VideoManagement() {
               <h3 className="font-semibold text-lg mb-2 line-clamp-2">{video.title}</h3>
 
               <div className="space-y-2 text-sm text-muted-foreground">
-
                 <div className="flex items-center justify-between">
                   <span>User: <span className="font-medium">{video.userName}</span></span>
                   <span>Email: <span className="font-medium">{video.userEmail}</span></span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span>Watch Times: <span className="font-medium">{video.watchTimes}</span>  times</span>
+                  <span>Watch Times: <span className="font-medium">{video.watchTimes}</span> times</span>
                   <span>Cost: ₹<span className="text-green-600 font-medium">{video.cost}</span></span>
                 </div>
 
@@ -169,27 +240,37 @@ export function VideoManagement() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Eye className="w-4 h-4 mr-2" />
-                      View Details
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Video
-                    </DropdownMenuItem>
-                    {video.status === 'uploaded' && (
-                      <>
-                        <DropdownMenuItem className="text-green-600">
+                    
+                      {video.status === "active" ? (
+                        
+                        <DropdownMenuItem
+                          size="sm"
+                          className="text-green-600"
+                          onClick={() => handleChangeStatus(video.id, " Disable")}
+                          
+                        >
+                           <XCircle className="w-4 h-4 mr-2" />
+                          Disable
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem
+                          size="sm"
+                         className="text-red-600"
+                          onClick={() => handleChangeStatus(video.id, " Enable")}
+                        >
                           <CheckCircle className="w-4 h-4 mr-2" />
-                          Approve
+                          Enable
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
-                          <XCircle className="w-4 h-4 mr-2" />
-                          Reject
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                    <DropdownMenuItem className="text-red-600">
+                      )}
+                    
+                    {/* Delete with Modal */}
+                    <DropdownMenuItem
+                      className="text-red-600"
+                      onClick={() => {
+                        setSelectedVideoId(video.id);
+                        setDeleteModalOpen(true);
+                      }}
+                    >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete
                     </DropdownMenuItem>
@@ -200,6 +281,24 @@ export function VideoManagement() {
           </Card>
         ))}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to delete this video?</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
