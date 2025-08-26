@@ -20,7 +20,7 @@ const menuItems = [
   { id: 'coins', label: 'Coin Management', icon: Coins, path: '/dashboard/coin' },
   { id: 'transactions', label: 'Transaction', icon: CreditCard, path: '/dashboard/transaction' },
   { id: 'notification', label: 'Notification', icon: CreditCard, path: '/dashboard/notificationmange' },
-  { id: 'contacts', label: 'Contact', icon: MessageSquare, path: '/dashboard/contact' },
+  { id: 'contacts', label: 'Query List', icon: MessageSquare, path: '/dashboard/contact' },
 ];
 
 export function Sidebar({ activeSection, setActiveSection }) {

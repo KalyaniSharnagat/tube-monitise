@@ -128,7 +128,7 @@ export const communication = {
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/user/create-user`,
-        userData, 
+        userData,
         {
           headers: {
             "Content-Type": "application/json",
@@ -145,48 +145,88 @@ export const communication = {
 
   // Get User List
   getUserList: async ({ id = "", page, searchString = "" } = {}) => {
-  try {
-    const requestBody = { id, page, searchString };
+    try {
+      const requestBody = { id, page, searchString };
 
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/user/get-user-list-for-admin`,
-      requestBody,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getCookie("auth")}`,
-        },
-      }
-    );
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/user/get-user-list-for-admin`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
 
-    return response;
-  } catch (error) {
-    toast.error(error?.response?.data?.message || error.message);
-    throw error;
-  }
-},  
+      return response;
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error.message);
+      throw error;
+    }
+  },
 
   // Get Query List
-getQueryList: async (page = 1, searchString = "") => {
-  try {
-    const requestBody = { page, searchString };
+  getQueryList: async (page = 1, searchString = "") => {
+    try {
+      const requestBody = { page, searchString };
 
-    return await axios.post(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/get-query-list`,
-      requestBody,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getCookie("auth")}`, 
+      return await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/get-query-list`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+  updateQuery: async (queryId, data) => {
+    try {
+      return await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/update-query`,
+        {
+          queryId,
+          ...data
         },
-      }
-    );
-  } catch (error) {
-    toast.error(error.message);
-    throw error;
-  }
-},
- createCoinSlot: async (coins, amount) => {
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+  deleteQuery: async (data) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/delete-selected-query`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error deleting coin package");
+      throw error;
+    }
+  },
+
+  createCoinSlot: async (coins, amount) => {
     try {
       const requestBody = { coins: Number(coins), amount: Number(amount) };
 
@@ -254,7 +294,7 @@ getQueryList: async (page = 1, searchString = "") => {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/delete-coin-slot`,
         {
-          slotIds, 
+          slotIds,
         },
         {
           headers: {
@@ -276,7 +316,7 @@ getQueryList: async (page = 1, searchString = "") => {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/user/delete-selected-user`,
         {
-          userIds, 
+          userIds,
         },
         {
           headers: {
