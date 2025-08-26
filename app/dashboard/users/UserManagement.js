@@ -16,15 +16,11 @@ export function UserManagement() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
 
-  const [statusModalOpen, setStatusModalOpen] = useState(false);
-  const [userToToggleStatus, setUserToToggleStatus] = useState(null);
-
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);  //delete
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
 
-  // Filter and search 
   const filteredData = useMemo(() => {
     return users.filter(user =>
       user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -32,7 +28,6 @@ export function UserManagement() {
     );
   }, [users, searchQuery]);
 
-  // Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -53,71 +48,66 @@ export function UserManagement() {
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  useEffect(() => { fetchUsers(); }, []);
 
-  // View modal
   const openViewModal = (user) => {
     setSelectedUser(user);
     setIsModalOpen(true);
   };
 
-  // Status toggle modal
-  const openStatusModal = (user) => {
-    setUserToToggleStatus(user);
-    setStatusModalOpen(true);
-  };
+const toggleStatus = async (user) => {
+  try {
+    const response = await communication.changeUserStatus(user.id); // use 'id' from object
 
-  const confirmToggleStatus = async () => {
-    if (!userToToggleStatus) return;
-    const newStatus = userToToggleStatus.status === "Active" ? "Inactive" : "Active";
-    try {
-      const res = await communication.updateUser(userToToggleStatus.userIds, {
-        ...userToToggleStatus,
-        status: newStatus
-      });
-      if (res?.data?.status === "SUCCESS") {
-        toast.success(`User status updated to "${newStatus}"!`);
-        fetchUsers();
-      } else {
-        toast.warning(res.data.message || "Failed to update user status.");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong while updating user status.");
-    } finally {
-      setStatusModalOpen(false);
-      setUserToToggleStatus(null);
+    if (response?.data?.status === "SUCCESS") {
+      // Update local state immediately
+      setUsers(prev =>
+        prev.map(u =>
+          u.id === user.id
+            ? { ...u, status: u.status === "Active" ? "Inactive" : "Active" }
+            : u
+        )
+      );
+      toast.success(response.data.message || "User status updated successfully");
+    } else {
+      toast.error(response?.data?.message || "Failed to update status");
     }
-  };
+  } catch (error) {
+    console.error("Error in toggleStatus:", error);
+    toast.error("Something went wrong while updating status");
+  }
+};
 
-  // Delete modal
-  const openDeleteModal = (userId) => {
-    setUserToDelete(userId);
+
+  const openDeleteModal = (user) => {
+    setUserToDelete(user);
     setDeleteModalOpen(true);
   };
 
   const confirmDeleteUser = async () => {
-    try {
+  if (!userToDelete?.id) {
+    toast.error("Invalid user selected");
+    return;
+  }
 
-      const res = await communication.deleteSelectedUser([userToDelete]);
-      if (res?.data?.status === "SUCCESS") {
-        toast.success("User deleted successfully!");
-        fetchUsers();
-      }
-      else {
-        toast.warning(res.data.message || "Failed to delete")
-      }
+  try {
+    // Pass an array of IDs
+    const res = await communication.deleteSelectedUser([userToDelete.id]);
 
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong while");
-    } finally {
-      setDeleteModalOpen(false);
-      setUserToDelete(null);
+    if (res?.data?.status === "SUCCESS") {
+      toast.success("User deleted successfully!");
+      fetchUsers();
+    } else {
+      toast.warning(res.data.message || "Failed to delete");
     }
-  };
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong while deleting user");
+  } finally {
+    setDeleteModalOpen(false);
+    setUserToDelete(null);
+  }
+};
 
   return (
     <div className="space-y-6">
@@ -126,7 +116,6 @@ export function UserManagement() {
           <CardTitle className="text-lg font-semibold">User Management</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Filter and Pagination  */}
           <FilterBar
             showSearch
             searchPlaceholder="Search users..."
@@ -135,75 +124,66 @@ export function UserManagement() {
             totalPages={totalPages}
             onPageChange={(page) => setCurrentPage(page)}
           />
-          <div className="w-full overflow-x-auto max-h-[500px] ">
-            <table className="min-w-[900px] border-collapse">
-              {/* Table Head */}
-              <thead className="sticky top-0 z-10 bg-white dark:bg-gray-800">
-                <tr className="border-b">
-                  <th className="p-3 text-center">Sr.No.</th>
-                  <th className="p-3 text-center">User</th>
-                  <th className="p-3 text-center">Email</th>
-                  <th className="p-3 text-center">Google Id</th>
-                  <th className="p-3 text-center">Referral Id</th>
-                  <th className="p-3 text-center">Join Date</th>
-                  <th className="p-3 text-center">Videos</th>
-                  <th className="p-3 text-center">Coins</th>
-                  <th className="p-3 text-center">Actions</th>
-                </tr>
-              </thead>
-
-              {/* Table Body */}
-              <tbody>
-                {paginatedData.length > 0 ? (
-                  paginatedData.map((user, index) => (
-                    <tr key={user.userIds} className="hover:bg-gray-50 transition-colors">
-                      <td className="p-3 text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                      <td className="p-3 whitespace-nowrap">{user.name}</td>
-                      <td className="p-3 whitespace-nowrap">{user.email}</td>
-                      <td className="p-3">{user.googleId}</td>
-                      <td className="p-3">{user.referralCode}</td>
-                      <td className="p-3 text-sm text-gray-500">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="p-3">{user.videos}--</td>
-                      <td className="p-3">{user.coins}--</td>
-                      <td className="p-3 flex gap-2 items-center justify-center">
-                        {/* Eye button */}
-                        <Button variant="ghost" size="icon" onClick={() => openViewModal(user)} className="hover:bg-gray-100">
+          <div className="w-full border rounded">
+            <div className="w-full overflow-auto max-h-[500px]">
+              <table className="min-w-[900px] w-full border-collapse">
+                <thead className="sticky top-0 z-10 bg-white dark:bg-gray-800">
+                  <tr className="border-b">
+                    <th className="text-center p-4">Sr.No.</th>
+                    <th className="text-center p-4">User</th>
+                    <th className="text-center p-4">Email</th>
+                    <th className="text-center p-4">Google Id</th>
+                    <th className="text-center p-4">Referral Id</th>
+                    <th className="text-center p-4">Join Date</th>
+                    <th className="text-center p-4">Videos</th>
+                    <th className="text-center p-4">Coins</th>
+                    <th className="text-center p-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedData.length > 0 ? paginatedData.map((user, index) => (
+                    <tr key={user.userIds} className="border-b">
+                      <td className="p-4 whitespace-normal break-all">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                      <td className="p-4 whitespace-normal break-all">{user.name}</td>
+                      <td className="p-4 whitespace-normal break-all">{user.email}</td>
+                      <td className="p-4 whitespace-normal break-all">{user.googleId}</td>
+                      <td className="p-4 whitespace-normal break-all">{user.referralCode}</td>
+                      <td className="p-4 text-sm text-muted-foreground">{new Date(user.createdAt).toLocaleDateString()}</td>
+                      <td className="p-4">{user.videos}--</td>
+                      <td className="p-4">{user.coins}--</td>
+                      <td className="p-4 flex gap-2 items-center">
+                        {/* View */}
+                        <button size="icon" onClick={() => openViewModal(user)} >
                           <Eye className="w-4 h-4" />
-                        </Button>
+                        </button>
 
-                        {/* Status toggle */}
-                        <Button
-                          onClick={() => openStatusModal(user)}
-                          className={`relative inline-flex h-4 w-8 items-center rounded-full border transition-colors 
-                ${user.status === 'Active' ? 'border-black' : 'border-gray-400'}`}
+                        {/* Status toggle directly */}
+                        <button
+                          onClick={() => toggleStatus(user)}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full
+                            ${user.status === 'Active' ? 'bg-green-500' : 'bg-gray-400'}`}
                         >
                           <span
-                            className={`inline-block h-3 w-3 transform rounded-full bg-black transition-transform
-                  ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white 
+                              ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
                           />
-                        </Button>
+                        </button>
 
-                        {/* Delete button */}
-                        <Button variant="ghost" size="icon" onClick={() => openDeleteModal(user.id)} className="hover:bg-gray-100">
-                          <Trash2 className="w-4 h-4 text-gray-600" />
-                        </Button>
+                        {/* Delete */}
+                        <button  size="icon" onClick={() => openDeleteModal(user)} >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="9" className="text-center py-4 text-gray-500">
-                      No users found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )) : (
+                    <tr>
+                      <td colSpan="9" className="text-center py-4 text-gray-500">No users found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-
-
         </CardContent>
       </Card>
 
@@ -219,14 +199,14 @@ export function UserManagement() {
               <div><strong>Email:</strong> {selectedUser.email}</div>
               <div><strong>Google ID:</strong> {selectedUser.googleId}</div>
               <div><strong>Referral ID:</strong> {selectedUser.referralCode}</div>
-              <div><strong>Status:</strong> <Badge>{selectedUser.status || "Inactive"}</Badge></div>
+              <div><strong>Status:</strong> <Badge className= "bg-green-600 text-white">{selectedUser.status || "Inactive"}</Badge></div>
               <div><strong>Join Date:</strong> {new Date(selectedUser.createdAt).toLocaleDateString()}</div>
               <div><strong>Videos:</strong> {selectedUser.videos}</div>
               <div><strong>Coins:</strong> {selectedUser.coins}</div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Close</Button>
+            <Button  className= "bg-green-600 text-white  hover:bg-green-600" onClick={() => setIsModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -234,42 +214,16 @@ export function UserManagement() {
       {/* Delete Modal */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent className="p-0 overflow-hidden rounded-lg max-w-sm w-full">
-          <div className="text-white flex justify-between items-center px-4 py-2 bg-red-600">
+          <div className="text-white flex justify-between items-center px-4 py-2 bg-green-600">
             <h3 className="font-semibold text-lg">Delete Confirmation</h3>
-            <button
-              className="text-white text-xl font-bold"
-              onClick={() => setDeleteModalOpen(false)}
-            >
-              ×
-            </button>
+            <button className=" text-white text-xl font-bold" onClick={() => setDeleteModalOpen(false)}>×</button>
           </div>
           <div className="p-4 text-center">
-            <p className="text-gray-700">
-              Are you sure you want to delete <strong>{userToDelete?.name}</strong>?
-            </p>
+            <p className="text-gray-700">Are you sure you want to delete <strong>{userToDelete?.name}</strong>?</p>
           </div>
           <DialogFooter className="flex justify-center gap-4 p-4">
-            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={confirmDeleteUser}>Delete</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Status Toggle  Modal */}
-      <Dialog open={statusModalOpen} onOpenChange={setStatusModalOpen}>
-        <DialogContent className="p-0 overflow-hidden rounded-lg max-w-sm w-full">
-          <div className={`text-white flex justify-between items-center px-4 py-2 ${userToToggleStatus?.status === 'Active' ? 'bg-red-600' : 'bg-blue-500'}`}>
-            <h3 className="font-semibold text-lg">Confirm Status Change</h3>
-            <button className="text-white text-xl font-bold" onClick={() => setStatusModalOpen(false)}>×</button>
-          </div>
-          <div className="p-4 text-center">
-            <p className="text-gray-700">
-              Are you sure you want to {userToToggleStatus?.status === 'Active' ? 'disable' : 'enable'} the user {userToToggleStatus?.name}?
-            </p>
-          </div>
-          <DialogFooter className="flex justify-center gap-4 p-4">
-            <Button variant="outline" onClick={() => setStatusModalOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={confirmToggleStatus}>Confirm</Button>
+            <Button className="bg-gray-600 text-white  hover:bg-gray-600"  onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
+            <Button className="bg-green-600 text-white  hover:bg-green-600" onClick={confirmDeleteUser}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

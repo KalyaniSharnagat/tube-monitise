@@ -415,6 +415,49 @@ changeVideoStatus: async (videoId, status) => {
   }
 },
 
+  // Change user status (Enable/Disable)
+changeUserStatus: async (userId, newStatus) => {
+  try {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/user/change-user-status`,
+      {
+        userId,
+        status: newStatus, // 'Active' or 'Inactive'
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("auth")}`,
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Error changing user status");
+    throw error;
+  }
+},
+
+  // Update User
+ updateUser: async (userId, updatedData) => {
+  try {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/user/update-user/${userId}`,
+      updatedData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("auth")}`,
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    toast.error(error?.response?.data?.message || error.message);
+    throw error;
+  }
+},
 
 
 }
