@@ -77,19 +77,19 @@ export function VideoManagement() {
     setPlayingVideo(playingVideo === id ? null : id);
   };
 
+
   // ✅ Change Status Handler
-  // ✅ Change Status Handler
-  const handleChangeStatus = async (videoId, newStatus) => {
+  const handleChangeStatus = async (videoId) => {
     try {
-      const res = await communication.changeVideoStatus(videoId, newStatus);
+      const res = await communication.changeVideoStatus(videoId);
 
       if (res?.data?.status === "SUCCESS") {
-        toast.success(`Video ${newStatus} successfully`);
+        toast.success(res.data.message);
 
-        // ✅ Local update without refetch
+        // ✅ अब newStatus backend से मिलेगा
         setVideos((prev) =>
           prev.map((v) =>
-            v.id === videoId ? { ...v, status: newStatus } : v
+            v.id === videoId ? { ...v, status: res.data.newStatus } : v
           )
         );
       } else {
@@ -240,29 +240,26 @@ export function VideoManagement() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    
-                      {video.status === "active" ? (
-                        
-                        <DropdownMenuItem
-                          size="sm"
-                          className="text-green-600"
-                          onClick={() => handleChangeStatus(video.id, " Disable")}
-                          
-                        >
-                           <XCircle className="w-4 h-4 mr-2" />
-                          Disable
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem
-                          size="sm"
-                         className="text-red-600"
-                          onClick={() => handleChangeStatus(video.id, " Enable")}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Enable
-                        </DropdownMenuItem>
-                      )}
-                    
+
+                    {video.status === "enable" ? (
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={() => handleChangeStatus(video.id)}
+                      >
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Disable
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem
+                        className="text-green-600"
+                        onClick={() => handleChangeStatus(video.id)}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Enable
+                      </DropdownMenuItem>
+                    )}
+
+
                     {/* Delete with Modal */}
                     <DropdownMenuItem
                       className="text-red-600"
