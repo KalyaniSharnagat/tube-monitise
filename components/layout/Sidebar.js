@@ -7,8 +7,8 @@ import {
   Users,
   Video,
   Coins,
-  CreditCard,
-  MessageSquare,
+   Receipt,             
+  HelpCircle,
   LogOut,
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -17,11 +17,8 @@ const menuItems = [
   { id: 'users', label: 'User Management', icon: Users, path: '/dashboard/users' },
   { id: 'videos', label: 'Video Management', icon: Video, path: '/dashboard/videomange' },
   { id: 'coins', label: 'Coin Management', icon: Coins, path: '/dashboard/coin' },
-  { id: 'transactions', label: 'Transaction', icon: CreditCard, path: '/dashboard/transaction' },
-
-  { id: 'notification', label: 'Notification', icon: CreditCard, path: '/dashboard/notificationmange' },
-  { id: 'contacts', label: 'Query List', icon: MessageSquare, path: '/dashboard/contact' },
-
+  { id: 'transactions', label: 'Transaction', icon: Receipt, path: '/dashboard/transaction' },
+  { id: 'contacts', label: 'Query List', icon: HelpCircle, path: '/dashboard/contact' },
 ];
 
 
