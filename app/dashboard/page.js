@@ -9,7 +9,7 @@ import { CoinManagement } from "./coin/CoinManagement";
 import { VideoManagement } from "./videomange/VideoManagement";
 import { ContactManagement } from "./contact/ContactManagement";
 import { TransactionManagement } from "./transaction/TransactionManagement";
-import Notification from "./notificationmange/Notification"; 
+import {Notification} from "./notificationmange/Notification"; 
 
 export default function Page() {
   const [loading, setLoading] = useState(true);

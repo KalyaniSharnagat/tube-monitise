@@ -1,7 +1,11 @@
 'use client';
-
+import Link from "next/link";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { io } from "socket.io-client";
+import { communication } from "@/services/communication";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +29,46 @@ export function Header({ activeSection }) {
       default: return 'User Management';
     }
   };
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [socket, setSocket] = useState(null);
+
+    const fetchNotificationCount = async () => {
+      try {
+        const res = await communication.getNotificationCount();
+        if (res?.data?.status === "SUCCESS") {
+          setNotificationCount(res.data.notification || 0);
+        } else {
+          setNotificationCount(0);
+        }
+      } catch (err) {
+        console.error("Error fetching notification count:", err);
+        setNotificationCount(0);
+      }
+    };
+
+    useEffect(() => {
+    const socketConnection = io(process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000", {
+      transports: ["websocket"],
+    });
+
+    setSocket(socketConnection);
+
+    return () => {
+      socketConnection.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("notificationCount", () => {
+        fetchNotificationCount(); 
+      });
+    }
+  }, [socket]);
+
+  useEffect(() => {
+    fetchNotificationCount(); 
+  }, []);
 
   return (
     <header className="h-16 bg-white dark:bg-gray-800 border-b border-border shadow-sm">
@@ -32,12 +76,14 @@ export function Header({ activeSection }) {
         <h2 className="text-xl font-semibold text-foreground"></h2>
 
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="w-5 h-5" />
-            <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs bg-red-500">
-              3
-            </Badge>
-          </Button>
+          <Link href="/dashboard/notificationmange">
+      <Button variant="ghost" size="icon" className="relative">
+        <Bell className="w-5 h-5" />
+        <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs bg-red-500">
+         {notificationCount > 99 ? "99+" : notificationCount}
+        </Badge>
+      </Button>
+    </Link>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

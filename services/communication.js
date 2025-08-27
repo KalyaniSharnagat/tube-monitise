@@ -194,6 +194,7 @@ export const communication = {
           queryId,
           ...data
         },
+
         {
           headers: {
             "Content-Type": "application/json",
@@ -226,7 +227,8 @@ export const communication = {
     }
   },
 
-  createCoinSlot: async (coins, amount) => {
+
+ createCoinSlot: async (coins, amount) => {
     try {
       const requestBody = { coins: Number(coins), amount: Number(amount) };
 
@@ -332,6 +334,128 @@ export const communication = {
       throw error;
     }
   },
+getAllNotification: async (page = 1, searchString = "") => {
+  try {
+    return await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/notification/get-all-notification`,
+      { page, searchString }, 
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("auth")}`,
+        },
+      }
+    );
+  } catch (error) {
+    toast.error(error.message);
+    throw error;
+  }
+},
+
+getNotificationCount: async () => {
+    try {
+      return await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/notification/get-notification-count`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+deleteAllNotification: async () => {
+  try {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/notification/delete-all-notification`,
+      {}, 
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("auth")}`,
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message || "Error deleting all notifications"
+    );
+    throw error;
+  }
+},
+deleteSelectedNotification: async (notificationIds) => {
+  try {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/notification/delete-selected-notification`,
+      { notificationIds }, 
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("auth")}`,
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message || "Error deleting selected notifications"
+    );
+    throw error;
+  }
+},
+
+deleteVideo: async (videoId) => {
+  try {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/video/delete-video`,
+      { videoId: String(videoId) },  
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("auth")}`,
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message || "Error deleting video"
+    );
+    throw error;
+  }
+},
+
+changeVideoStatus: async (videoId, status) => {
+  try {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/video/change-video-status`,
+      { 
+        videoId: String(videoId),            
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("auth")}`,
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message || "Error changing video status"
+    );
+    throw error;
+  }
+},
 
   // Change user status (Enable/Disable)
 changeUserStatus: async (userId, newStatus) => {
