@@ -32,26 +32,30 @@ export function VideoManagement() {
   const [playingVideo, setPlayingVideo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [searchString, setSearchString] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState(null);
 
   const fetchVideos = async () => {
-    try {
-      setLoading(true);
-      const res = await communication.getVideoListForAdmin(page, searchString);
-      if (res?.data?.status === 'SUCCESS') {
-        setVideos(res.data.videos || []);
-      } else {
-        setVideos([]);
-      }
-    } catch (err) {
-      console.error('Error fetching videos:', err);
+  try {
+    setLoading(true);
+    const res = await communication.getVideoListForAdmin(page, searchString);
+    if (res?.data?.status === 'SUCCESS') {
+      setVideos(res.data.videos || []);
+      setTotalPages(res.data.totalPages || 0);  
+    } else {
       setVideos([]);
-    } finally {
-      setLoading(false);
+      setTotalPages(0);
     }
-  };
+  } catch (err) {
+    console.error('Error fetching videos:', err);
+    setVideos([]);
+    setTotalPages(0);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getYoutubeEmbedUrl = (url) => {
     try {
@@ -86,7 +90,7 @@ export function VideoManagement() {
       if (res?.data?.status === "SUCCESS") {
         toast.success(res.data.message);
 
-        // ✅ अब newStatus backend से मिलेगा
+
         setVideos((prev) =>
           prev.map((v) =>
             v.id === videoId ? { ...v, status: res.data.newStatus } : v
@@ -122,20 +126,49 @@ export function VideoManagement() {
   return (
     <div className="space-y-6">
       {/* Search Box */}
-      <div className="flex items-center gap-2">
-        <input
-          type="text"
-          placeholder="Search videos..."
-          value={searchString}
-          onChange={(e) => setSearchString(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              fetchVideos();
-            }
-          }}
-          className="border p-2 rounded-md w-1/3"
-        />
-      </div>
+     <div className="flex items-center justify-between gap-2 w-full">
+  {/* Left Side → Search Input */}
+  <input
+    type="text"
+    placeholder="Search videos..."
+    value={searchString}
+    onChange={(e) => setSearchString(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        fetchVideos();
+      }
+    }}
+    className="border p-2 rounded-md w-1/3"
+  />
+
+  {/* Right Side → Pagination */}
+  {totalPages > 0 && (
+    <div className="flex items-center gap-2 text-sm pe-5">
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={page === 1}
+        onClick={() => setPage((prev) => prev - 1)}
+      >
+        ‹
+      </Button>
+
+      <span>
+        Page <span className="font-medium">{page}</span> of{" "}
+        <span className="font-medium">{totalPages}</span>
+      </span>
+
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={page === totalPages}
+        onClick={() => setPage((prev) => prev + 1)}
+      >
+        ›
+      </Button>
+    </div>
+  )}
+</div>
 
       {/* Loading State */}
       {loading && <p className="text-center">Loading videos...</p>}
@@ -193,15 +226,13 @@ export function VideoManagement() {
               {/* Status Badge Left Side */}
               <div className="absolute top-2 left-2">
                 <Badge
-                  className={
-                    video.status === 'active'
-                      ? 'bg-green-500'
-                      : 'bg-red-500'
-                  }
-                >
-                  {video.status}
+                  className={`${video.status === 'enable' ? 'bg-green-500' : 'bg-red-500'
+                    } border-2 border-white shadow-lg text-white px-3 py-1 rounded-[30px]`}
+                > 
+                  {video.status === 'enable' ? 'Enable' : 'Disable'}
                 </Badge>
               </div>
+
             </div>
 
             <CardContent className="p-4">
@@ -243,7 +274,7 @@ export function VideoManagement() {
 
                     {video.status === "enable" ? (
                       <DropdownMenuItem
-                        className="text-red-600"
+                        className="text-gray-600"
                         onClick={() => handleChangeStatus(video.id)}
                       >
                         <XCircle className="w-4 h-4 mr-2" />
@@ -251,7 +282,7 @@ export function VideoManagement() {
                       </DropdownMenuItem>
                     ) : (
                       <DropdownMenuItem
-                        className="text-green-600"
+                        className="text-gray-600"
                         onClick={() => handleChangeStatus(video.id)}
                       >
                         <CheckCircle className="w-4 h-4 mr-2" />
@@ -262,7 +293,7 @@ export function VideoManagement() {
 
                     {/* Delete with Modal */}
                     <DropdownMenuItem
-                      className="text-red-600"
+                      className="text-gray-600"
                       onClick={() => {
                         setSelectedVideoId(video.id);
                         setDeleteModalOpen(true);
