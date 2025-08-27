@@ -20,15 +20,18 @@ import { Bell, User, LogOut, Settings } from 'lucide-react';
 export function Header({ activeSection }) {
   const getSectionTitle = () => {
     switch (activeSection) {
-      case 'User Management': return 'User Management';
+      // case 'User Management': return 'User Management';
       case 'users': return 'User Management';
       case 'videos': return 'Video Management';
       case 'coins': return 'Coin Management';
       case 'transactions': return 'Transaction Management';
       case 'contacts': return 'Contact Management';
-      default: return 'User Management';
+      // default: return 'User Management';
     }
   };
+
+    const showPagination = activeSection !== 'dashboard';
+    
   const [notificationCount, setNotificationCount] = useState(0);
   const [socket, setSocket] = useState(null);
 
@@ -73,7 +76,7 @@ export function Header({ activeSection }) {
   return (
     <header className="h-16 bg-white dark:bg-gray-800 border-b border-border shadow-sm">
       <div className="flex items-center justify-between h-full px-6">
-        <h2 className="text-xl font-semibold text-foreground"></h2>
+        <h2 className="text-xl font-semibold text-foreground">{getSectionTitle()}</h2>
 
         <div className="flex items-center space-x-4">
           <Link href="/dashboard/notificationmange">
