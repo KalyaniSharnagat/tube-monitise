@@ -10,9 +10,8 @@ import {
   CreditCard,
   MessageSquare,
   LogOut,
-  
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 const menuItems = [
   { id: 'users', label: 'User Management', icon: Users, path: '/dashboard/users' },
@@ -28,18 +27,16 @@ const menuItems = [
 
 export function Sidebar({ activeSection, setActiveSection }) {
   const router = useRouter();
-
-
-  
+  const pathname = usePathname(); // ✅ Get current path
 
   return (
-    <div className=" w-56 h-screen bg-white dark:bg-gray-800 border-r border-border shadow-lg flex flex-col">
+    <div className="w-56 h-screen bg-white dark:bg-gray-800 border-r border-border shadow-lg flex flex-col">
       <div className="px-0 py-1">
         <div className="w-full flex justify-center">
-          <img 
-            src="/logo-removebg.png" 
-            alt="Logo" 
-            className="w-48 h-24 object-contain drop-shadow" 
+          <img
+            src="/logo-removebg.png"
+            alt="Logo"
+            className="w-48 h-24 object-contain drop-shadow"
           />
         </div>
       </div>
@@ -49,21 +46,18 @@ export function Sidebar({ activeSection, setActiveSection }) {
         <div className="space-y-2 mb-6 pt-3">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const iconClass =
-              (item.id === 'transactions' || item.id === 'contacts')
-                ? 'w-5 h-5 mr-3 text-red-600'
-                : 'w-5 h-5 mr-3';
+            const isActive = pathname === item.path; // ✅ Check active tab
+
             return (
               <Button
                 key={item.id}
-                variant={activeSection === item.id ? 'default' : 'ghost'}
-                className={`w-full justify-start h-12`}
-                onClick={() => {
-                  setActiveSection(item.id);
-                  router.push(item.path); // ✅ page route open hoga
-                }}
+                variant="ghost"
+                className={`w-full justify-start h-12 ${
+                  isActive ? 'bg-red-600 text-white hover:bg-red-700' : ''
+                }`}
+                onClick={() => router.push(item.path)}
               >
-                <Icon className={iconClass} />
+                <Icon className={`w-5 h-5 mr-3 ${isActive ? 'text-white' : ''}`} />
                 {item.label}
               </Button>
             );
@@ -76,7 +70,7 @@ export function Sidebar({ activeSection, setActiveSection }) {
           onSubmit={(e) => {
             e.preventDefault();
             document.cookie = 'auth=; Path=/; Max-Age=0; SameSite=Lax';
-            router.push('/login'); // ✅ logout hone ke baad login page pe le jayega
+            router.push('/login');
           }}
         >
           <Button type="submit" variant="ghost" className="w-full justify-start">

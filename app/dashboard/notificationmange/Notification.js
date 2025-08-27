@@ -12,6 +12,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { communication } from '@/services/communication';
+import { toast } from 'react-toastify';
 
 export function Notification() {
   const [notifications, setNotifications] = useState([]);
@@ -24,103 +25,162 @@ export function Notification() {
   const [bulkDeleteType, setBulkDeleteType] = useState(null);
 
   // 🔹 Fetch notifications list
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      const res = await communication.getAllNotification(page, searchString);
-      console.log("API Response:", res?.data); // 👈 debug
-      if (res?.data?.status === 'SUCCESS') {
-        setNotifications(res.data.notifications || []);
-      } else {
-        setNotifications([]);
-      }
-    } catch (err) {
-      console.error('Error fetching notifications:', err);
-      setNotifications([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchNotifications = async () => {
+  try {
+    setLoading(true);
+    const res = await communication.getAllNotification(page, searchString);
 
-  // mount पर load
-  useEffect(() => {
-    fetchNotifications();
-  }, [page, searchString]);
+    console.log("API Response:", res?.data);
 
-  // Delete click (single)
-  const handleDeleteClick = (id) => {
-    setDeleteId(id);
-    setIsOpen(true);
-  };
-
-  // confirmDelete (single delete)
-  const confirmDelete = async () => {
-    try {
-      const res = await communication.deleteSelectedNotification([deleteId]);
-      if (res?.data?.status === "SUCCESS") {
-        setNotifications((prev) => prev.filter((n) => n.id !== deleteId));
-      }
-    } catch (err) {
-      console.error("Error deleting notification:", err);
-    } finally {
-      setIsOpen(false);
-      setDeleteId(null);
-    }
-  };
-
-  const toggleSelect = (id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.length === notifications.length) {
-      setSelectedIds([]);
+    if (res?.data?.status === 'SUCCESS') {
+      setNotifications(res.data.notifications || []);
     } else {
-      setSelectedIds(notifications.map((n) => n.id));
+      toast.warning(res.data.message || 'Failed to fetch notifications', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
+      setNotifications([]);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching notifications:', error.response?.data);
 
-  // Bulk delete selected button click
-  const handleDeleteSelectedClick = () => {
-    if (selectedIds.length === 0) return;
-    setBulkDeleteType("SELECTED");
-    setIsOpen(true);
-  };
+    const apiStatus = error.response?.data?.status;
+    const message = error.response?.data?.message || 'Error fetching notifications';
 
-  // Delete All button click
-  const handleDeleteAllClick = () => {
-    setBulkDeleteType("ALL");
-    setIsOpen(true);
-  };
+    toast.error(message, {
+      position: 'top-right',
+      autoClose: 3000,
+    });
 
-  // confirm bulk delete
-  const confirmBulkDelete = async () => {
-    try {
-      let res;
-      if (bulkDeleteType === "SELECTED") {
-        res = await communication.deleteSelectedNotification(selectedIds);
-        if (res?.data?.status === "SUCCESS") {
-          setNotifications((prev) =>
-            prev.filter((n) => !selectedIds.includes(n.id))
-          );
-          setSelectedIds([]);
-        }
-      } else if (bulkDeleteType === "ALL") {
-        res = await communication.deleteAllNotification();
-        if (res?.data?.status === "SUCCESS") {
-          setNotifications([]);
-          setSelectedIds([]);
-        }
+    if (apiStatus === 'JWT_INVALID') {
+      setCookie(null, 'auth', '', { maxAge: -1, path: '/' });
+      setCookie(null, 'userDetails', '', { maxAge: -1, path: '/' });
+
+      setTimeout(() => {
+        router.push('/login');
+      }, 1500);
+    }
+
+    setNotifications([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Load on mount or page/search change
+useEffect(() => {
+  fetchNotifications();
+}, [page, searchString]);
+
+// Delete click (single)
+const handleDeleteClick = (id) => {
+  setDeleteId(id);
+  setIsOpen(true);
+};
+
+// confirmDelete (single delete)
+const confirmDelete = async () => {
+  try {
+    const res = await communication.deleteSelectedNotification([deleteId]);
+    if (res?.data?.status === "SUCCESS") {
+      setNotifications((prev) => prev.filter((n) => n.id !== deleteId));
+      toast.success("Notification deleted successfully", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } else {
+      toast.warning(res?.data?.message || "Failed to delete notification", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+  } catch (err) {
+    console.error("Error deleting notification:", err);
+    toast.error("Error deleting notification", {
+      position: "top-right",
+      autoClose: 3000,
+    });
+  } finally {
+    setIsOpen(false);
+    setDeleteId(null);
+  }
+};
+
+const toggleSelect = (id) => {
+  setSelectedIds((prev) =>
+    prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+  );
+};
+
+const toggleSelectAll = () => {
+  if (selectedIds.length === notifications.length) {
+    setSelectedIds([]);
+  } else {
+    setSelectedIds(notifications.map((n) => n.id));
+  }
+};
+
+// Bulk delete selected button click
+const handleDeleteSelectedClick = () => {
+  if (selectedIds.length === 0) return;
+  setBulkDeleteType("SELECTED");
+  setIsOpen(true);
+};
+
+// Delete All button click
+const handleDeleteAllClick = () => {
+  setBulkDeleteType("ALL");
+  setIsOpen(true);
+};
+
+// confirm bulk delete
+const confirmBulkDelete = async () => {
+  try {
+    let res;
+    if (bulkDeleteType === "SELECTED") {
+      res = await communication.deleteSelectedNotification(selectedIds);
+      if (res?.data?.status === "SUCCESS") {
+        setNotifications((prev) =>
+          prev.filter((n) => !selectedIds.includes(n.id))
+        );
+        setSelectedIds([]);
+        toast.success("Selected notifications deleted successfully", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } else {
+        toast.warning(res?.data?.message || "Failed to delete selected notifications", {
+          position: "top-right",
+          autoClose: 3000,
+        });
       }
-    } catch (err) {
-      console.error("Error bulk deleting notifications:", err);
-    } finally {
-      setIsOpen(false);
-      setBulkDeleteType(null);
+    } else if (bulkDeleteType === "ALL") {
+      res = await communication.deleteAllNotification();
+      if (res?.data?.status === "SUCCESS") {
+        setNotifications([]);
+        setSelectedIds([]);
+        toast.success("All notifications deleted successfully", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } else {
+        toast.warning(res?.data?.message || "Failed to delete all notifications", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
     }
-  };
+  } catch (err) {
+    console.error("Error bulk deleting notifications:", err);
+    toast.error("Error performing bulk delete", {
+      position: "top-right",
+      autoClose: 3000,
+    });
+  } finally {
+    setIsOpen(false);
+    setBulkDeleteType(null);
+  }
+};
 
   return (
     <div className="space-y-6">
