@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
-import Loader from "../loader/loader"; // 👈 common loader import
+import Loader from "../loader/loader"; 
 
 import UserManagement from "./UserManagement"; 
 import { CoinManagement } from "./coin/CoinManagement";
@@ -16,7 +16,7 @@ export default function Page() {
 
   useEffect(() => {
     // simulate API/data load OR route load
-    const timer = setTimeout(() => setLoading(false), 1000); // 1 sec
+    const timer = setTimeout(() => setLoading(false), 1000); 
     return () => clearTimeout(timer);
   }, []);
 
