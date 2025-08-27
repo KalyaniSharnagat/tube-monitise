@@ -1,5 +1,5 @@
 'use client';
-
+import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FilterBar } from '@/components/common/FilterBar';
+import { setCookie } from 'cookies-next';
 
 export function CoinManagement() {
   const [coinPackages, setCoinPackages] = useState([]);
@@ -23,6 +24,7 @@ export function CoinManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [totalPages, setTotalPages] = useState(1);
+  const router = useRouter(); 
 
 
   const openDeleteModal = (pkgId) => {
@@ -49,32 +51,45 @@ export function CoinManagement() {
   };
 
   const fetchCoins = async () => {
-    try {
-      setLoading(true);
-      const res = await communication.getCoinSlotList({
-        page: currentPage,
-        searchString: searchQuery,
-      });
+  try {
+    setLoading(true);
+    const res = await communication.getCoinSlotList({
+      page: currentPage,
+      searchString: searchQuery,
+    });
 
-      if (res?.data?.status === 'SUCCESS') {
-        setCoinPackages(res.data.slots || []);
-        setTotalPages(res.data.totalPages || 1); // Backend se aana chahiye
-      } else {
-        toast.warning(res.data.message || 'Failed to fetch coin packages', {
-          position: 'top-right',
-          autoClose: 3000,
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error('Error fetching coin packages', {
+    if (res?.data?.status === 'SUCCESS') {
+      setCoinPackages(res.data.slots || []);
+      setTotalPages(res.data.totalPages || 1);
+    } else {
+      toast.warning(res.data.message || 'Failed to fetch coin packages', {
         position: 'top-right',
         autoClose: 3000,
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Error Response:", error.response?.data);
+
+    const apiStatus = error.response?.data?.status;
+    const message = error.response?.data?.message || 'Error fetching coin packages';
+
+    toast.error(message, {
+      position: 'top-right',
+      autoClose: 3000,
+    });
+
+    if (apiStatus === 'JWT_INVALID') {
+      setCookie(null, 'auth', '', { maxAge: -1, path: '/' });
+      setCookie(null, 'userDetails', '', { maxAge: -1, path: '/' });
+
+      setTimeout(() => {
+        router.push('/login'); // ✅ Next.js safe redirect
+      }, 1500);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   useEffect(() => {

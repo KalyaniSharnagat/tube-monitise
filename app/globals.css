@@ -108,15 +108,7 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
-
-
-
-
-
-
-
-  .usermanagement-table th,
+.usermanagement-table th,
   .usermanagement-table td {
     padding: 10px;
     font-size: 14px;
@@ -181,6 +173,7 @@
 
 .custom-scroll::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
+  
 }
 
 

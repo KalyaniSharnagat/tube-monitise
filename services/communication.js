@@ -222,7 +222,7 @@ getQueryList: async (page = 1, searchString = "") => {
         }
       );
     } catch (error) {
-      toast.error(error.message);
+     
       throw error;
     }
   },
