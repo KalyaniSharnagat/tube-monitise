@@ -37,7 +37,7 @@ export function ContactManagement() {
   const [page, setPage] = useState(1);
   const [searchString, setSearchString] = useState('');
 
-  
+
   const fetchContacts = async () => {
     try {
       setLoading(true);
@@ -60,27 +60,61 @@ export function ContactManagement() {
   }, [page, searchString]);
 
   const handleEdit = (contact) => {
-    setSelectedContact({ ...contact });
+    setSelectedContact({ ...contact, queryId: contact.id });
     setOpenEditModal(true);
   };
 
-  const handleSave = () => {
-    console.log("Updated Contact:", selectedContact);
-    setOpenEditModal(false);
-    
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const res = await communication.updateQuery(selectedContact.queryId, {
+        message: selectedContact.message,
+        status: selectedContact.status,
+        remarks: selectedContact.remarks,
+        subject: selectedContact.subject
+      });
+
+      if (res?.data?.status === "SUCCESS") {
+        // Update state locally
+        setContacts((prev) =>
+          prev.map((c) =>
+            c.id === selectedContact.queryId ? { ...c, ...selectedContact } : c
+          )
+        );
+
+        setOpenEditModal(false);
+        setSelectedContact(null);
+      }
+    } catch (err) {
+      console.error("Error updating contact:", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   const handleDelete = (contact) => {
     setSelectedContact(contact);
     setOpenDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    setContacts(contacts.filter(c => c.id !== selectedContact.id));
-    setOpenDeleteModal(false);
-    setSelectedContact(null);
-   
+  const confirmDelete = async () => {
+    try {
+      setLoading(true);
+      const res = await communication.deleteQuery({ queryIds: [selectedContact.id] });
+
+      if (res?.data?.status === "SUCCESS") {
+        setContacts((prev) => prev.filter((c) => c.id !== selectedContact.id));
+        setOpenDeleteModal(false);
+        setSelectedContact(null);
+      }
+    } catch (err) {
+      console.error("Error deleting contact:", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   return (
     <div className="space-y-6">
@@ -170,8 +204,8 @@ export function ContactManagement() {
                         <Badge
                           className={
                             contact.status === 'Pending' ? 'bg-red-100 text-red-800' :
-                            contact.status === 'Resolved' ? 'bg-green-100 text-green-800' :
-                            'bg-yellow-100 text-yellow-800'
+                              contact.status === 'Resolved' ? 'bg-green-100 text-green-800' :
+                                'bg-yellow-100 text-yellow-800'
                           }
                         >
                           {contact.status}
@@ -198,6 +232,7 @@ export function ContactManagement() {
       )}
 
       {/* Edit Modal */}
+      {/* Edit Modal */}
       <Dialog open={openEditModal} onOpenChange={setOpenEditModal}>
         <DialogContent>
           <DialogHeader>
@@ -205,6 +240,20 @@ export function ContactManagement() {
           </DialogHeader>
           {selectedContact && (
             <div className="space-y-4">
+              {/* Subject 👇 New field */}
+              <div>
+                <label className="text-sm font-medium">Subject</label>
+                <Input
+                  type="text"
+                  value={selectedContact.subject}
+                  onChange={(e) =>
+                    setSelectedContact({ ...selectedContact, subject: e.target.value })
+                  }
+                  className="mt-2"
+                />
+              </div>
+
+              {/* Message */}
               <div>
                 <label className="text-sm font-medium">Message</label>
                 <Textarea
@@ -215,6 +264,8 @@ export function ContactManagement() {
                   className="mt-2"
                 />
               </div>
+
+              {/* Status */}
               <div>
                 <label className="text-sm font-medium">Status</label>
                 <Select
@@ -227,10 +278,25 @@ export function ContactManagement() {
                     <SelectValue placeholder="Select Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Pending">Pending</SelectItem>
+                    <SelectItem value="Raised">Raised</SelectItem>
+                    <SelectItem value="In Progress">In Progress</SelectItem>
                     <SelectItem value="Resolved">Resolved</SelectItem>
+                    <SelectItem value="Closed">Closed</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Remarks */}
+              <div>
+                <label className="text-sm font-medium">Remarks</label>
+                <Textarea
+                  placeholder="Enter remarks..."
+                  value={selectedContact.remarks || ""}
+                  onChange={(e) =>
+                    setSelectedContact({ ...selectedContact, remarks: e.target.value })
+                  }
+                  className="mt-2"
+                />
               </div>
             </div>
           )}
@@ -239,6 +305,7 @@ export function ContactManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
 
       {/* Delete Confirmation Modal */}
       <Dialog open={openDeleteModal} onOpenChange={setOpenDeleteModal}>

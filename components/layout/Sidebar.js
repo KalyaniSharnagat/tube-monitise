@@ -18,13 +18,19 @@ const menuItems = [
   { id: 'videos', label: 'Video Management', icon: Video, path: '/dashboard/videomange' },
   { id: 'coins', label: 'Coin Management', icon: Coins, path: '/dashboard/coin' },
   { id: 'transactions', label: 'Transaction', icon: CreditCard, path: '/dashboard/transaction' },
+
   { id: 'notification', label: 'Notification', icon: CreditCard, path: '/dashboard/notificationmange' },
-  { id: 'contacts', label: 'Contact', icon: MessageSquare, path: '/dashboard/contact' },
+  { id: 'contacts', label: 'Query List', icon: MessageSquare, path: '/dashboard/contact' },
+
 ];
 
-export function Sidebar() {
+
+export function Sidebar({ activeSection, setActiveSection }) {
   const router = useRouter();
   const pathname = usePathname(); // ✅ Get current path
+
+
+  
 
   return (
     <div className="w-56 h-screen bg-white dark:bg-gray-800 border-r border-border shadow-lg flex flex-col">
