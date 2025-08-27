@@ -29,9 +29,6 @@ export function Sidebar({ activeSection, setActiveSection }) {
   const router = useRouter();
   const pathname = usePathname(); // ✅ Get current path
 
-
-  
-
   return (
     <div className="w-56 h-screen bg-white dark:bg-gray-800 border-r border-border shadow-lg flex flex-col">
       <div className="px-0 py-1">

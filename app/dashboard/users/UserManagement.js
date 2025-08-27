@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { communication } from "@/services/communication";
 import { toast } from "react-toastify";
 import { FilterBar } from "@/components/common/FilterBar";
-
+import { setCookie } from 'cookies-next';
+import { useRouter } from 'next/navigation';
 export function UserManagement() {
   const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,6 +18,7 @@ export function UserManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const router = useRouter();
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
@@ -37,14 +39,43 @@ export function UserManagement() {
   const fetchUsers = async () => {
     try {
       const res = await communication.getUserList({ id: "", page: 1, searchString: "" });
-      const usersWithStatus = (res.data.users || []).map(user => ({
-        ...user,
-        status: user.status || "Active"
-      }));
-      setUsers(usersWithStatus);
+
+      if (res?.data?.status === 'SUCCESS') {
+        const usersWithStatus = (res.data.users || []).map(user => ({
+          ...user,
+          status: user.status || "Active"
+        }));
+        setUsers(usersWithStatus);
+      } else {
+        toast.error(res?.data?.message || 'Failed to fetch users', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+        setUsers([]);
+      }
+
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to fetch users.");
+      console.error('Error fetching users:', err.response?.data);
+
+      const apiStatus = err.response?.data?.status;
+      const message = err.response?.data?.message || 'Error fetching users';
+
+      toast.error(message, {
+        position: 'top-right',
+        autoClose: 3000,
+      });
+
+
+      if (apiStatus === 'JWT_INVALID') {
+        setCookie('auth', '', { maxAge: -1, path: '/' });
+        setCookie('userDetails', '', { maxAge: -1, path: '/' });
+
+        setTimeout(() => {
+          router.push('/login');
+        }, 1500);
+      }
+
+      setUsers([]);
     }
   };
 
@@ -55,28 +86,28 @@ export function UserManagement() {
     setIsModalOpen(true);
   };
 
-const toggleStatus = async (user) => {
-  try {
-    const response = await communication.changeUserStatus(user.id); // use 'id' from object
+  const toggleStatus = async (user) => {
+    try {
+      const response = await communication.changeUserStatus(user.id); // use 'id' from object
 
-    if (response?.data?.status === "SUCCESS") {
-      // Update local state immediately
-      setUsers(prev =>
-        prev.map(u =>
-          u.id === user.id
-            ? { ...u, status: u.status === "Active" ? "Inactive" : "Active" }
-            : u
-        )
-      );
-      toast.success(response.data.message || "User status updated successfully");
-    } else {
-      toast.error(response?.data?.message || "Failed to update status");
+      if (response?.data?.status === "SUCCESS") {
+        // Update local state immediately
+        setUsers(prev =>
+          prev.map(u =>
+            u.id === user.id
+              ? { ...u, status: u.status === "Active" ? "Inactive" : "Active" }
+              : u
+          )
+        );
+        toast.success(response.data.message || "User status updated successfully");
+      } else {
+        toast.error(response?.data?.message || "Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error in toggleStatus:", error);
+      toast.error("Something went wrong while updating status");
     }
-  } catch (error) {
-    console.error("Error in toggleStatus:", error);
-    toast.error("Something went wrong while updating status");
-  }
-};
+  };
 
 
   const openDeleteModal = (user) => {
@@ -85,29 +116,29 @@ const toggleStatus = async (user) => {
   };
 
   const confirmDeleteUser = async () => {
-  if (!userToDelete?.id) {
-    toast.error("Invalid user selected");
-    return;
-  }
-
-  try {
-    // Pass an array of IDs
-    const res = await communication.deleteSelectedUser([userToDelete.id]);
-
-    if (res?.data?.status === "SUCCESS") {
-      toast.success("User deleted successfully!");
-      fetchUsers();
-    } else {
-      toast.warning(res.data.message || "Failed to delete");
+    if (!userToDelete?.id) {
+      toast.error("Invalid user selected");
+      return;
     }
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong while deleting user");
-  } finally {
-    setDeleteModalOpen(false);
-    setUserToDelete(null);
-  }
-};
+
+    try {
+      // Pass an array of IDs
+      const res = await communication.deleteSelectedUser([userToDelete.id]);
+
+      if (res?.data?.status === "SUCCESS") {
+        toast.success("User deleted successfully!");
+        fetchUsers();
+      } else {
+        toast.warning(res.data.message || "Failed to delete");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while deleting user");
+    } finally {
+      setDeleteModalOpen(false);
+      setUserToDelete(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -158,21 +189,34 @@ const toggleStatus = async (user) => {
                         </button>
 
                         {/* Status toggle directly */}
-                        <button
-                          onClick={() => toggleStatus(user)}
-                          className={`relative inline-flex h-5 w-9 items-center rounded-full
-                            ${user.status === 'Active' ? 'bg-green-500' : 'bg-gray-400'}`}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white 
-                              ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
-                          />
-                        </button>
+                        <div className="relative group">
+                          <button
+                            onClick={() => toggleStatus(user)}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full
+                           ${user.status === 'Active' ? 'bg-green-500' : 'bg-gray-400'}`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white 
+                             ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
+                            />
+                          </button>
+
+                          {/* Tooltip */}
+                          <span className="absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 z-10">
+                            {user.status === 'Active' ? 'Activate' : 'Deactivate'}
+                          </span>
+                        </div>
+
 
                         {/* Delete */}
-                        <button  size="icon" onClick={() => openDeleteModal(user)} >
+                        <button
+                          size="icon"
+                          onClick={() => openDeleteModal(user)}
+                          title="Delete User"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
+
                       </td>
                     </tr>
                   )) : (
@@ -199,14 +243,14 @@ const toggleStatus = async (user) => {
               <div><strong>Email:</strong> {selectedUser.email}</div>
               <div><strong>Google ID:</strong> {selectedUser.googleId}</div>
               <div><strong>Referral ID:</strong> {selectedUser.referralCode}</div>
-              <div><strong>Status:</strong> <Badge className= "bg-green-600 text-white">{selectedUser.status || "Inactive"}</Badge></div>
+              <div><strong>Status:</strong> <Badge className="bg-green-600 text-white">{selectedUser.status || "Inactive"}</Badge></div>
               <div><strong>Join Date:</strong> {new Date(selectedUser.createdAt).toLocaleDateString()}</div>
               <div><strong>Videos:</strong> {selectedUser.videos}</div>
               <div><strong>Coins:</strong> {selectedUser.coins}</div>
             </div>
           )}
           <DialogFooter>
-            <Button  className= "bg-green-600 text-white  hover:bg-green-600" onClick={() => setIsModalOpen(false)}>Close</Button>
+            <Button className="bg-green-600 text-white  hover:bg-green-600" onClick={() => setIsModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -222,7 +266,7 @@ const toggleStatus = async (user) => {
             <p className="text-gray-700">Are you sure you want to delete <strong>{userToDelete?.name}</strong>?</p>
           </div>
           <DialogFooter className="flex justify-center gap-4 p-4">
-            <Button className="bg-gray-600 text-white  hover:bg-gray-600"  onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
+            <Button className="bg-gray-600 text-white  hover:bg-gray-600" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
             <Button className="bg-green-600 text-white  hover:bg-green-600" onClick={confirmDeleteUser}>Delete</Button>
           </DialogFooter>
         </DialogContent>

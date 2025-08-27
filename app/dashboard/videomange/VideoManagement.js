@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { setCookie } from 'cookies-next';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+
 import {
   MoreHorizontal,
   Play,
@@ -25,7 +29,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { communication } from '@/services/communication';
-import { toast } from 'react-hot-toast';
+
 
 export function VideoManagement() {
   const [videos, setVideos] = useState([]);
@@ -35,23 +39,49 @@ export function VideoManagement() {
   const [searchString, setSearchString] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState(null);
+  const router = useRouter();
 
   const fetchVideos = async () => {
-    try {
-      setLoading(true);
-      const res = await communication.getVideoListForAdmin(page, searchString);
-      if (res?.data?.status === 'SUCCESS') {
-        setVideos(res.data.videos || []);
-      } else {
-        setVideos([]);
-      }
-    } catch (err) {
-      console.error('Error fetching videos:', err);
+  try {
+    setLoading(true);
+    const res = await communication.getVideoListForAdmin(page, searchString);
+
+    if (res?.data?.status === 'SUCCESS') {
+      setVideos(res.data.videos || []);
+    } else {
+      toast.error(res?.data?.message || 'Failed to fetch videos', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
       setVideos([]);
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching videos:', error.response?.data);
+
+    const apiStatus = error.response?.data?.status;
+    const message = error.response?.data?.message || 'Error fetching videos';
+
+    toast.error(message, {
+      position: 'top-right',
+      autoClose: 3000,
+    });
+
+    // ✅ Handle JWT Invalid
+    if (apiStatus === 'JWT_INVALID') {
+      setCookie(null, 'auth', '', { maxAge: -1, path: '/' });
+      setCookie(null, 'userDetails', '', { maxAge: -1, path: '/' });
+
+      setTimeout(() => {
+        router.push('/login');
+      }, 1500);
+    }
+
+    setVideos([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const getYoutubeEmbedUrl = (url) => {
     try {

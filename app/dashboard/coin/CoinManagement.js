@@ -83,7 +83,7 @@ export function CoinManagement() {
       setCookie(null, 'userDetails', '', { maxAge: -1, path: '/' });
 
       setTimeout(() => {
-        router.push('/login'); // ✅ Next.js safe redirect
+        router.push('/login'); 
       }, 1500);
     }
   } finally {
