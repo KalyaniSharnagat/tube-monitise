@@ -10,9 +10,8 @@ import {
    Receipt,             
   HelpCircle,
   LogOut,
-  
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 const menuItems = [
   { id: 'users', label: 'User Management', icon: Users, path: '/dashboard/users' },
@@ -23,62 +22,61 @@ const menuItems = [
 ];
 
 
-export function Sidebar({ activeSection, setActiveSection }) {
+export function Sidebar({ activeSection, setActiveSection, isCollapsed }) {
   const router = useRouter();
-
-
-  
+  const pathname = usePathname(); // ✅ Get current path
 
   return (
-    <div className=" w-56 h-screen bg-white dark:bg-gray-800 border-r border-border shadow-lg flex flex-col">
-      <div className="px-0 py-1">
+    <div
+      className={`hidden md:flex h-[100dvh] sticky top-0 bg-white dark:bg-gray-800 border-r border-border shadow-lg flex-col transition-all duration-200 ${
+        isCollapsed ? 'w-16' : 'w-56'
+      }`}
+    >
+      <div className="px-0 py-2">
         <div className="w-full flex justify-center">
-          <img 
-            src="/logo-removebg.png" 
-            alt="Logo" 
-            className="w-48 h-24 object-contain drop-shadow" 
+          <img
+            src="/logo-removebg.png"
+            alt="Logo"
+            className={`${isCollapsed ? 'w-10 h-10' : 'w-48 h-20'} object-contain drop-shadow`}
           />
         </div>
       </div>
       <Separator />
 
-      <ScrollArea className="flex-1 px-4">
+      <ScrollArea className={`flex-1 ${isCollapsed ? 'px-1' : 'px-4'}`}>
         <div className="space-y-2 mb-6 pt-3">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const iconClass =
-              (item.id === 'transactions' || item.id === 'contacts')
-                ? 'w-5 h-5 mr-3'
-                : 'w-5 h-5 mr-3';
+            const isActive = pathname === item.path; // ✅ Check active tab
+
             return (
               <Button
                 key={item.id}
-                variant={activeSection === item.id ? 'default' : 'ghost'}
-                className={`w-full justify-start h-12`}
-                onClick={() => {
-                  setActiveSection(item.id);
-                  router.push(item.path); // ✅ page route open hoga
-                }}
+                variant="ghost"
+                className={`w-full justify-start h-12 ${
+                  isActive ? 'bg-red-600 text-white hover:bg-red-700' : ''
+                } ${isCollapsed ? 'px-2' : ''}`}
+                onClick={() => router.push(item.path)}
               >
-                <Icon className={iconClass} />
-                {item.label}
+                <Icon className={`w-5 h-5 ${isCollapsed ? 'mr-0' : 'mr-3'} ${isActive ? 'text-white' : ''}`} />
+                {!isCollapsed && item.label}
               </Button>
             );
           })}
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t border-border">
+      <div className={`p-2 md:p-4 border-t border-border`}>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             document.cookie = 'auth=; Path=/; Max-Age=0; SameSite=Lax';
-            router.push('/login'); // ✅ logout hone ke baad login page pe le jayega
+            router.push('/login');
           }}
         >
-          <Button type="submit" variant="ghost" className="w-full justify-start">
-            <LogOut className="w-5 h-5 mr-3" />
-            Log out
+          <Button type="submit" variant="ghost" className={`w-full justify-start ${isCollapsed ? 'px-2' : ''}`}>
+            <LogOut className={`w-5 h-5 ${isCollapsed ? 'mr-0' : 'mr-3'}`} />
+            {!isCollapsed && 'Log out'}
           </Button>
         </form>
       </div>

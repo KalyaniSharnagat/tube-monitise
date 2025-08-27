@@ -108,6 +108,11 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+.usermanagement-table th,
+  .usermanagement-table td {
+    padding: 10px;
+    font-size: 14px;
+  }
 
 
 .scroll-hidden::-webkit-scrollbar {
@@ -121,5 +126,65 @@
 
 
 
+/* ---- Medium Laptop / Tablets Landscape (992px and below) ---- */
+@media (max-width: 992px) {
+  .usermanagement-table {
+    min-width: 700px;
+  }
+
+  .usermanagement-table th,
+  .usermanagement-table td {
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .usermanagement-table-container {
+    max-height: 400px;
+  }
+}
+
+/* ---- Small Laptop / Tablets Portrait (768px and below) ---- */
+@media (max-width: 768px) {
+  .usermanagement-table {
+    min-width: 600px;
+    font-size: 12px;
+  }
+
+  .usermanagement-table th,
+  .usermanagement-table td {
+    padding: 6px;
+  }
+
+  .usermanagement-table td .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+/* ---- Mobile (576px and below) ---- */
+@media (max-width: 576px) {
+  .usermanagement-table {
+    min-width: 500px;
+  }
+
+  .usermanagement-table-container {
+    max-height: 300px;
+  }
+
+  .usermanagement-table th,
+  .usermanagement-table td {
+    padding: 5px;
+    font-size: 11px;
+  }
+}
+.custom-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.custom-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+  
+}
 
 

@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { setCookie } from 'cookies-next';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
@@ -37,27 +40,50 @@ export function ContactManagement() {
   const [totalPages, setTotalPages] = useState(0);
   const [page, setPage] = useState(1);
   const [searchString, setSearchString] = useState('');
+  const router = useRouter();
 
 
   const fetchContacts = async () => {
-    try {
-      setLoading(true);
-      const res = await communication.getQueryList(page, searchString);
-      if (res?.data?.status === "SUCCESS") {
-        setContacts(res.data.contacts || []);
-        setTotalPages(res.data.totalPages || 0);
-      } else {
-        setContacts([]);
-        setTotalPages(0);
-      }
-    } catch (err) {
-      console.error("Error fetching contacts:", err);
+  try {
+    setLoading(true);
+    const res = await communication.getQueryList(page, searchString);
+
+    if (res?.data?.status === "SUCCESS") {
+      setContacts(res.data.contacts || []);
+    } else {
+      toast.error(res?.data?.message || "Failed to fetch contacts", {
+        position: 'top-right',
+        autoClose: 3000,
+      });
       setContacts([]);
-      setTotalPages(0);
-    } finally {
-      setLoading(false);
     }
-  };
+
+  } catch (err) {
+    console.error("Error fetching contacts:", err.response?.data);
+
+    const apiStatus = err.response?.data?.status;
+    const message = err.response?.data?.message || "Error fetching contacts";
+
+    toast.error(message, {
+      position: 'top-right',
+      autoClose: 3000,
+    });
+
+    
+    if (apiStatus === "JWT_INVALID") {
+      setCookie('auth', '', { maxAge: -1, path: '/' });
+      setCookie('userDetails', '', { maxAge: -1, path: '/' });
+
+      setTimeout(() => {
+        router.push('/login');
+      }, 1500);
+    }
+
+    setContacts([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchContacts();
@@ -331,6 +357,7 @@ export function ContactManagement() {
                     setSelectedContact({ ...selectedContact, remarks: e.target.value })
                   }
                   className="mt-2"
+                  required
                 />
               </div>
             </div>

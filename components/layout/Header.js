@@ -17,7 +17,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Bell, User, LogOut, Settings } from 'lucide-react';  
 
-export function Header({ activeSection }) {
+export function Header({ activeSection, onToggleSidebar, isSidebarCollapsed }) {
   const getSectionTitle = () => {
     switch (activeSection) {
       // case 'User Management': return 'User Management';
@@ -74,11 +74,20 @@ export function Header({ activeSection }) {
   }, []);
 
   return (
-    <header className="h-12 bg-white dark:bg-gray-800 border-b border-border shadow-sm">
-      <div className="flex items-center justify-between h-full px-6">
-        <h2 className="text-xl font-semibold text-foreground">
-          {/* {getSectionTitle()} */}
-        </h2>
+    <header className="h-14 md:h-16 sticky top-0 z-30 bg-white dark:bg-gray-800 border-b border-border shadow-sm">
+      <div className="flex items-center justify-between gap-2 h-full px-3 md:px-6">
+        <div className="flex items-center gap-2">
+          <button
+            aria-label="Toggle sidebar"
+            onClick={onToggleSidebar}
+            className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-md border border-border"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <h2 className="text-lg md:text-xl font-semibold text-foreground">{getSectionTitle()}</h2>
+        </div>
 
         <div className="flex items-center space-x-4">
           <Link href="/dashboard/notificationmange">

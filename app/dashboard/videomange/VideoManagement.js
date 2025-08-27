@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { setCookie } from 'cookies-next';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+
 import {
   MoreHorizontal,
   Play,
@@ -25,7 +29,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { communication } from '@/services/communication';
-import { toast } from 'react-hot-toast';
+
 
 export function VideoManagement() {
   const [videos, setVideos] = useState([]);
@@ -36,22 +40,44 @@ export function VideoManagement() {
   const [searchString, setSearchString] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState(null);
+  const router = useRouter();
 
   const fetchVideos = async () => {
   try {
     setLoading(true);
     const res = await communication.getVideoListForAdmin(page, searchString);
+
     if (res?.data?.status === 'SUCCESS') {
       setVideos(res.data.videos || []);
-      setTotalPages(res.data.totalPages || 0);  
     } else {
+      toast.error(res?.data?.message || 'Failed to fetch videos', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
       setVideos([]);
-      setTotalPages(0);
     }
-  } catch (err) {
-    console.error('Error fetching videos:', err);
+  } catch (error) {
+    console.error('Error fetching videos:', error.response?.data);
+
+    const apiStatus = error.response?.data?.status;
+    const message = error.response?.data?.message || 'Error fetching videos';
+
+    toast.error(message, {
+      position: 'top-right',
+      autoClose: 3000,
+    });
+
+    // ✅ Handle JWT Invalid
+    if (apiStatus === 'JWT_INVALID') {
+      setCookie(null, 'auth', '', { maxAge: -1, path: '/' });
+      setCookie(null, 'userDetails', '', { maxAge: -1, path: '/' });
+
+      setTimeout(() => {
+        router.push('/login');
+      }, 1500);
+    }
+
     setVideos([]);
-    setTotalPages(0);
   } finally {
     setLoading(false);
   }
@@ -181,8 +207,8 @@ export function VideoManagement() {
         <p className="text-center">No videos found.</p>
       )}
 
-      {/* Videos Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Videos Grid (scroll only inside this grid area) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto max-h-[calc(100dvh-14rem)] pr-1">
         {videos.map((video) => (
           <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48">

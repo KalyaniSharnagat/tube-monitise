@@ -264,7 +264,7 @@ export const communication = {
         }
       );
     } catch (error) {
-      toast.error(error.message);
+     
       throw error;
     }
   },

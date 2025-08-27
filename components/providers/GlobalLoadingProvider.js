@@ -53,8 +53,8 @@ export function GlobalLoadingOverlay() {
   const lastShownAtRef = useRef(0);
 
   useEffect(() => {
-    const showDelayMs = 200; // delay before showing
-    const minVisibleMs = 500; // keep visible at least this long
+    const showDelayMs = 100; // delay before showing
+    const minVisibleMs = 300; // keep visible at least this long
 
     if (activeRequests > 0) {
       // clear pending hide timers
