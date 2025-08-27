@@ -34,6 +34,7 @@ export function ContactManagement() {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [expandedMessage, setExpandedMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
   const [page, setPage] = useState(1);
   const [searchString, setSearchString] = useState('');
 
@@ -44,12 +45,15 @@ export function ContactManagement() {
       const res = await communication.getQueryList(page, searchString);
       if (res?.data?.status === "SUCCESS") {
         setContacts(res.data.contacts || []);
+        setTotalPages(res.data.totalPages || 0);
       } else {
         setContacts([]);
+        setTotalPages(0);
       }
     } catch (err) {
       console.error("Error fetching contacts:", err);
       setContacts([]);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }
@@ -118,26 +122,57 @@ export function ContactManagement() {
 
   return (
     <div className="space-y-6">
+       <p className="text-lg font-semibold">Query Management</p>
       {/* Search Box */}
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-center space-x-4">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search contacts..."
-                className="pl-10"
-                value={searchString}
-                onChange={(e) => setSearchString(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    fetchContacts();
-                  }
-                }}
-              />
-            </div>
+
+          <div className="flex items-center justify-between gap-2 w-full">
+           
+            <input
+              type="text"
+              placeholder="Search query..."
+              value={searchString}
+              onChange={(e) => setSearchString(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  fetchVideos();
+                }
+              }}
+              className="border p-2 rounded-md w-1/3"
+            />
+
+            
+            {totalPages > 0 && (
+              <div className="flex items-center gap-2 text-sm pe-5">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={page === 1}
+                  onClick={() => setPage((prev) => prev - 1)}
+                >
+                  ‹
+                </Button>
+
+                <span>
+                  Page <span className="font-medium">{page}</span> of{" "}
+                  <span className="font-medium">{totalPages}</span>
+                </span>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={page === totalPages}
+                  onClick={() => setPage((prev) => prev + 1)}
+                >
+                  ›
+                </Button>
+              </div>
+            )}
           </div>
+
         </CardContent>
+
       </Card>
 
       {/* Loading State */}

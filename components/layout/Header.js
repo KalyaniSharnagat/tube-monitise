@@ -25,13 +25,13 @@ export function Header({ activeSection }) {
       case 'videos': return 'Video Management';
       case 'coins': return 'Coin Management';
       case 'transactions': return 'Transaction Management';
-      case 'contacts': return 'Contact Management';
+      case 'contacts': return 'Query Management';
       // default: return 'User Management';
     }
   };
 
     const showPagination = activeSection !== 'dashboard';
-    
+
   const [notificationCount, setNotificationCount] = useState(0);
   const [socket, setSocket] = useState(null);
 
@@ -74,15 +74,17 @@ export function Header({ activeSection }) {
   }, []);
 
   return (
-    <header className="h-16 bg-white dark:bg-gray-800 border-b border-border shadow-sm">
+    <header className="h-12 bg-white dark:bg-gray-800 border-b border-border shadow-sm">
       <div className="flex items-center justify-between h-full px-6">
-        <h2 className="text-xl font-semibold text-foreground">{getSectionTitle()}</h2>
+        <h2 className="text-xl font-semibold text-foreground">
+          {/* {getSectionTitle()} */}
+        </h2>
 
         <div className="flex items-center space-x-4">
           <Link href="/dashboard/notificationmange">
-      <Button variant="ghost" size="icon" className="relative">
-        <Bell className="w-5 h-5" />
-        <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs bg-red-500">
+      <Button variant="ghost" size="icon" className="relative pt-2">
+        <Bell className="w-5 h-5 " />
+        <Badge className="absolute top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs bg-red-500">
          {notificationCount > 99 ? "99+" : notificationCount}
         </Badge>
       </Button>
