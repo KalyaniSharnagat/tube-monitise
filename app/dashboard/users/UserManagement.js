@@ -156,7 +156,8 @@ export function UserManagement() {
             onPageChange={(page) => setCurrentPage(page)}
           />
           <div className="w-full border rounded">
-            <div className="w-full overflow-auto max-h-[500px]">
+            {/* Only table area scrolls */}
+            <div className="w-full overflow-auto max-h-[calc(100dvh-16rem)]">
               <table className="min-w-[900px] w-full border-collapse">
                 <thead className="sticky top-0 z-10 bg-white dark:bg-gray-800">
                   <tr className="border-b">

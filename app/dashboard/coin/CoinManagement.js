@@ -181,14 +181,15 @@ export function CoinManagement() {
           </div>
 
 
-          <div className="max-h-[500px] overflow-y-auto p-4 custom-scroll">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Only coins list scrolls */}
+          <div className="overflow-y-auto p-4 custom-scroll max-h-[calc(100dvh-16rem)]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {coinPackages.length > 0 ? (
                 coinPackages.map((pkg) => (
 
                   <Card
                     key={pkg.id}
-                    className="relative border-2 w-60 h-54 mx-auto"
+                    className="relative border-2 w-full h-auto"
                     style={{ borderColor: '#2ea984' }}
                   >
 
@@ -200,13 +201,13 @@ export function CoinManagement() {
                       <Trash2 className="w-5 h-5" />
                     </button>
 
-                    <CardContent className="p-4 text-center">
-                      <div className="w-12 h-12 mx-auto mb-3 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <CardContent className="p-4 md:p-5 text-center">
+                      <div className="w-12 h-12 md:w-14 md:h-14 mx-auto mb-3 bg-yellow-100 rounded-full flex items-center justify-center">
                         <Coins className="w-6 h-6 text-yellow-600" />
                       </div>
-                      <p className="text-2xl font-bold text-yellow-600 mb-1">{pkg.coins}</p>
-                      <p className="text-xs text-muted-foreground mb-2">coins</p>
-                      <p className="text-xl font-bold mb-3" style={{ color: '#2ea984' }}>
+                      <p className="text-2xl md:text-3xl font-bold text-yellow-600 mb-1">{pkg.coins}</p>
+                      <p className="text-xs md:text-sm text-muted-foreground mb-2">coins</p>
+                      <p className="text-xl md:text-2xl font-bold mb-3" style={{ color: '#2ea984' }}>
                         ${pkg.amount}
                       </p>
 
