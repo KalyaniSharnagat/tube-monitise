@@ -150,7 +150,7 @@ export function VideoManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Search Box */}
      <div className="flex items-center justify-between gap-2 w-full">
   {/* Left Side → Search Input */}
@@ -204,8 +204,8 @@ export function VideoManagement() {
         <p className="text-center">No videos found.</p>
       )}
 
-      {/* Videos Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Videos Grid (scroll only inside this grid area) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto max-h-[calc(100dvh-14rem)] pr-1">
         {videos.map((video) => (
           <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow">
             <div className="relative w-full h-48">
