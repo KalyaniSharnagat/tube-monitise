@@ -143,7 +143,10 @@ export function VideoManagement() {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
+
+    
+    <div className="space-y-6">
+       <p className="text-lg font-semibold">Video Management</p>
       {/* Search Box */}
      <div className="flex items-center justify-between gap-2 w-full">
   {/* Left Side → Search Input */}

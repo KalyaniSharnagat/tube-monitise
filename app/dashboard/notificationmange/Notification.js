@@ -23,6 +23,7 @@ export function Notification() {
   const [searchString, setSearchString] = useState('');
   const [deleteId, setDeleteId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
   const [selectedIds, setSelectedIds] = useState([]);
   const [bulkDeleteType, setBulkDeleteType] = useState(null);
   const router = useRouter();
@@ -185,17 +186,48 @@ export function Notification() {
   return (
     <div className="space-y-6">
       {/* Search Box */}
-      <div className="flex items-center gap-5">
+      <div className="flex items-center justify-between gap-2 w-full">
+        {/* Left Side → Search Input */}
         <input
           type="text"
-          placeholder="Search notifications..."
+          placeholder="Search Notification..."
           value={searchString}
           onChange={(e) => setSearchString(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") fetchNotifications();
+            if (e.key === "Enter") {
+              fetchVideos();
+            }
           }}
           className="border p-2 rounded-md w-1/3"
         />
+
+        {/* Right Side → Pagination */}
+        {totalPages > 0 && (
+          <div className="flex items-center gap-2 text-sm pe-5">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === 1}
+              onClick={() => setPage((prev) => prev - 1)}
+            >
+              ‹
+            </Button>
+
+            <span>
+              Page <span className="font-medium">{page}</span> of{" "}
+              <span className="font-medium">{totalPages}</span>
+            </span>
+
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === totalPages}
+              onClick={() => setPage((prev) => prev + 1)}
+            >
+              ›
+            </Button>
+          </div>
+        )}
       </div>
 
       {loading && <p className="text-center">Loading notifications...</p>}
