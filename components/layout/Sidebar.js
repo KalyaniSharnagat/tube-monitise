@@ -47,7 +47,7 @@ export function Sidebar({ activeSection, setActiveSection, isCollapsed }) {
         <div className="space-y-2 mb-6 pt-3">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.path; // ✅ Check active tab
+            const isActive = pathname === item.path; 
 
             return (
               <Button
