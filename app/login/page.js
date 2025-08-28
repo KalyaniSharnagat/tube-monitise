@@ -14,7 +14,6 @@ import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { setCookie } from 'cookies-next';
 
-
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Enter a valid email'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -31,6 +30,17 @@ export default function LoginPage() {
     defaultValues: { email: '', password: '', remember: false },
     mode: 'onChange',
   });
+
+  // ✅ On page load, check if saved credentials exist
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberEmail');
+    const savedPassword = localStorage.getItem('rememberPassword');
+    if (savedEmail && savedPassword) {
+      form.setValue('email', savedEmail);
+      form.setValue('password', savedPassword);
+      form.setValue('remember', true);
+    }
+  }, [form]);
 
   const onSubmit = async (values) => {
     try {
@@ -53,6 +63,15 @@ export default function LoginPage() {
           setCookie('userDetails', JSON.stringify(data.userDetails));
         }
 
+        // ✅ Save credentials if "Remember me" is checked
+        if (values.remember) {
+          localStorage.setItem('rememberEmail', values.email);
+          localStorage.setItem('rememberPassword', values.password);
+        } else {
+          localStorage.removeItem('rememberEmail');
+          localStorage.removeItem('rememberPassword');
+        }
+
         router.push('/dashboard/users');
         toast.success('Login successful');
       } else {
@@ -70,8 +89,6 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
           <img src="/logo-removebg.png" alt="Logo" className="w-24 h-16 object-contain" />
-          {/* <h1 className="mt-2 text-2xl font-semibold">Welcome back</h1> */}
-          {/* <p className="text-sm text-muted-foreground">Sign in to access the admin panel</p> */}
         </div>
 
         <Card className="shadow-lg">

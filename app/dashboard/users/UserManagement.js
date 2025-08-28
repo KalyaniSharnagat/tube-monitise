@@ -159,15 +159,15 @@ export function UserManagement() {
               <table className="min-w-[900px] w-full border-collapse">
                 <thead className="sticky top-0 z-10 bg-white dark:bg-gray-800">
                   <tr className="border-b">
-                    <th className="text-center p-4">Sr.No.</th>
-                    <th className="text-center p-4">User</th>
-                    <th className="text-center p-4">Email</th>
-                    <th className="text-center p-4">Google Id</th>
-                    <th className="text-center p-4">Referral Id</th>
-                    <th className="text-center p-4">Join Date</th>
-                    <th className="text-center p-4">Videos</th>
-                    <th className="text-center p-4">Coins</th>
-                    <th className="text-center p-4">Actions</th>
+                    <th className=" p-4">Sr.No.</th>
+                    <th className=" p-4">User</th>
+                    <th className=" p-4">Email</th>
+                    <th className=" p-4">Google Id</th>
+                    <th className=" p-4">Referral Id</th>
+                    <th className=" p-4">Join Date</th>
+                    <th className=" p-4">Videos</th>
+                    <th className=" p-4">Coins</th>
+                    <th className=" p-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -184,7 +184,7 @@ export function UserManagement() {
                       <td className="p-4 flex gap-2 items-center">
                         {/* View */}
                         <button size="icon" onClick={() => openViewModal(user)} >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-6 h-6" />
                         </button>
 
                         {/* Toggle Status */}
@@ -201,6 +201,16 @@ export function UserManagement() {
                             />
                           </button>
                         </div>
+
+
+                        {/* Delete */}
+                        <button
+                          size="icon"
+                          onClick={() => openDeleteModal(user)}
+                          title="Delete User"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
 
                       </td>
                     </tr>
