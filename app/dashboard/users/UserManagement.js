@@ -192,12 +192,12 @@ export function UserManagement() {
                           <button
                             onClick={() => toggleStatus(user)}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full
-              ${user.status === 'Active' ? 'bg-green-500' : 'bg-gray-400'}`}
+                            ${user.status === 'Active' ? 'bg-green-500' : 'bg-gray-400'}`}
                             title={user.status === 'Active' ? 'Active' : 'Inactive'}
                           >
                             <span
                               className={`inline-block h-4 w-4 transform rounded-full bg-white 
-                ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
+                              ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
                             />
                           </button>
                         </div>
@@ -210,7 +210,7 @@ export function UserManagement() {
                           title="Delete User"
                         >
                           <Trash2 className="w-5 h-5" />
-                        </button>
+                        </button> 
 
                       </td>
                     </tr>
