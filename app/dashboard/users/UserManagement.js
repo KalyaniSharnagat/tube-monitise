@@ -181,8 +181,8 @@ export function UserManagement() {
                       <td className="p-4 whitespace-normal break-all">{user.googleId}</td>
                       <td className="p-4 whitespace-normal break-all">{user.referralCode}</td>
                       <td className="p-4 text-sm text-muted-foreground">{new Date(user.createdAt).toLocaleDateString()}</td>
-                      <td className="p-4">{user.videos}--</td>
-                      <td className="p-4">{user.coins}--</td>
+                      <td className="p-4">{user.totalVideos}</td>
+                      <td className="p-4">{user["wallet.coins"] ?? '0'}</td>
                       <td className="p-4 flex gap-2 items-center">
                         {/* View */}
                         <button size="icon" onClick={() => openViewModal(user)} >
@@ -246,8 +246,8 @@ export function UserManagement() {
               <div><strong>Referral ID:</strong> {selectedUser.referralCode}</div>
               <div><strong>Status:</strong> <Badge className="bg-green-600 text-white">{selectedUser.status || "Inactive"}</Badge></div>
               <div><strong>Join Date:</strong> {new Date(selectedUser.createdAt).toLocaleDateString()}</div>
-              <div><strong>Videos:</strong> {selectedUser.videos}</div>
-              <div><strong>Coins:</strong> {selectedUser.coins}</div>
+              <div><strong>Videos:</strong> {selectedUser.totalVideos}</div>
+              <div><strong>Coins:</strong> {selectedUser["wallet.coins"]}</div>
             </div>
           )}
           <DialogFooter>

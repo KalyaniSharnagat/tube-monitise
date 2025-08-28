@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Bell, User, LogOut, Settings } from 'lucide-react';  
+import { Bell, User, LogOut, Settings } from 'lucide-react';
 
 export function Header({ activeSection, onToggleSidebar, isSidebarCollapsed }) {
   const getSectionTitle = () => {
@@ -30,27 +30,27 @@ export function Header({ activeSection, onToggleSidebar, isSidebarCollapsed }) {
     }
   };
 
-    const showPagination = activeSection !== 'dashboard';
+  const showPagination = activeSection !== 'dashboard';
 
   const [notificationCount, setNotificationCount] = useState(0);
   const [socket, setSocket] = useState(null);
 
-    const fetchNotificationCount = async () => {
-      try {
-        const res = await communication.getNotificationCount();
-        if (res?.data?.status === "SUCCESS") {
-          setNotificationCount(res.data.notification || 0);
-        } else {
-          setNotificationCount(0);
-        }
-      } catch (err) {
-        console.error("Error fetching notification count:", err);
+  const fetchNotificationCount = async () => {
+    try {
+      const res = await communication.getNotificationCount();
+      if (res?.data?.status === "SUCCESS") {
+        setNotificationCount(res.data.notification || 0);
+      } else {
         setNotificationCount(0);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching notification count:", err);
+      setNotificationCount(0);
+    }
+  };
 
-    useEffect(() => {
-    const socketConnection = io(process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000", {
+  useEffect(() => {
+    const socketConnection = io(process.env.NEXT_PUBLIC_SERVER_URL, {
       transports: ["websocket"],
     });
 
@@ -64,13 +64,13 @@ export function Header({ activeSection, onToggleSidebar, isSidebarCollapsed }) {
   useEffect(() => {
     if (socket) {
       socket.on("notificationCount", () => {
-        fetchNotificationCount(); 
+        fetchNotificationCount();
       });
     }
   }, [socket]);
 
   useEffect(() => {
-    fetchNotificationCount(); 
+    fetchNotificationCount();
   }, []);
 
   return (
@@ -91,13 +91,13 @@ export function Header({ activeSection, onToggleSidebar, isSidebarCollapsed }) {
 
         <div className="flex items-center space-x-4">
           <Link href="/dashboard/notificationmange">
-      <Button variant="ghost" size="icon" className="relative pt-2">
-        <Bell className="w-5 h-5 " />
-        <Badge className="absolute top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs bg-red-500">
-         {notificationCount > 99 ? "99+" : notificationCount}
-        </Badge>
-      </Button>
-    </Link>
+            <Button variant="ghost" size="icon" className="relative pt-2">
+              <Bell className="w-5 h-5 " />
+              <Badge className="absolute top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs bg-red-500">
+                {notificationCount > 99 ? "99+" : notificationCount}
+              </Badge>
+            </Button>
+          </Link>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -122,7 +122,7 @@ export function Header({ activeSection, onToggleSidebar, isSidebarCollapsed }) {
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <LogOut className="mr-2 h-4 w-4" />
