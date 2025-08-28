@@ -9,13 +9,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { communication } from "@/services/communication";
 import { toast } from "react-toastify";
 import { FilterBar } from "@/components/common/FilterBar";
-import { setCookie } from 'cookies-next';
+import { deleteCookie, setCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 export function UserManagement() {
   const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const router = useRouter();
@@ -41,13 +42,22 @@ export function UserManagement() {
       const res = await communication.getUserList({ id: "", page: 1, searchString: "" });
 
       if (res?.data?.status === 'SUCCESS') {
+        toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
+
         const usersWithStatus = (res.data.users || []).map(user => ({
           ...user,
           status: user.status || "Active"
         }));
         setUsers(usersWithStatus);
+      } else if ('JWT_INVALID' === res.data.status) {
+        toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
+        deleteCookie('auth');
+        deleteCookie('userDetails');
+        setTimeout(() => {
+          router.push('/login');
+        }, 1000);
       } else {
-        toast.error(res?.data?.message || 'Failed to fetch users', {
+        toast.error(res.data.message, {
           position: 'top-right',
           autoClose: 3000,
         });
@@ -57,29 +67,17 @@ export function UserManagement() {
     } catch (err) {
       console.error('Error fetching users:', err.response?.data);
 
-      const apiStatus = err.response?.data?.status;
-      const message = err.response?.data?.message || 'Error fetching users';
-
-      toast.error(message, {
-        position: 'top-right',
-        autoClose: 3000,
-      });
-
-
-      if (apiStatus === 'JWT_INVALID') {
-        setCookie('auth', '', { maxAge: -1, path: '/' });
-        setCookie('userDetails', '', { maxAge: -1, path: '/' });
-
-        setTimeout(() => {
-          router.push('/login');
-        }, 1500);
-      }
-
       setUsers([]);
+    }
+    finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    fetchUsers();
+  }, [currentPage, searchQuery]);
+
 
   const openViewModal = (user) => {
     setSelectedUser(user);
@@ -189,34 +187,20 @@ export function UserManagement() {
                           <Eye className="w-4 h-4" />
                         </button>
 
-                        {/* Status toggle directly */}
-                        <div className="relative group">
+                        {/* Toggle Status */}
+                        <div className="flex items-center justify-center w-9 h-9">
                           <button
                             onClick={() => toggleStatus(user)}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full
-                           ${user.status === 'Active' ? 'bg-green-500' : 'bg-gray-400'}`}
+              ${user.status === 'Active' ? 'bg-green-500' : 'bg-gray-400'}`}
+                            title={user.status === 'Active' ? 'Active' : 'Inactive'}
                           >
                             <span
                               className={`inline-block h-4 w-4 transform rounded-full bg-white 
-                             ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
+                ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
                             />
                           </button>
-
-                          {/* Tooltip */}
-                          <span className="absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 z-10">
-                            {user.status === 'Active' ? 'Activate' : 'Deactivate'}
-                          </span>
                         </div>
-
-
-                        {/* Delete */}
-                        <button
-                          size="icon"
-                          onClick={() => openDeleteModal(user)}
-                          title="Delete User"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
 
                       </td>
                     </tr>
@@ -227,6 +211,7 @@ export function UserManagement() {
                   )}
                 </tbody>
               </table>
+
             </div>
           </div>
         </CardContent>
@@ -258,20 +243,49 @@ export function UserManagement() {
 
       {/* Delete Modal */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-        <DialogContent className="p-0 overflow-hidden rounded-lg max-w-sm w-full">
-          <div className="text-white flex justify-between items-center px-4 py-2 bg-green-600">
+        <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
+          {/* Header */}
+          <div
+            className="text-white flex justify-between items-center px-4 py-2"
+            style={{ backgroundColor: '#2ea984' }}
+          >
             <h3 className="font-semibold text-lg">Delete Confirmation</h3>
-            <button className=" text-white text-xl font-bold" onClick={() => setDeleteModalOpen(false)}>×</button>
+            <button
+              className="text-white text-xl font-bold"
+              onClick={() => setDeleteModalOpen(false)}
+            >
+              ×
+            </button>
           </div>
+
+          {/* Body */}
           <div className="p-4 text-center">
-            <p className="text-gray-700">Are you sure you want to delete <strong>{userToDelete?.name}</strong>?</p>
+            <p className="text-gray-700">
+              Are you sure you want to delete <strong>{userToDelete?.name}</strong>?
+            </p>
           </div>
+
+          {/* Footer */}
           <DialogFooter className="flex justify-center gap-4 p-4">
-            <Button className="bg-gray-600 text-white  hover:bg-gray-600" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
-            <Button className="bg-green-600 text-white  hover:bg-green-600" onClick={confirmDeleteUser}>Delete</Button>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteModalOpen(false)}
+              className="border-[#565e64] text-[#565e64] hover:bg-[#565e64] hover:text-white"
+            >
+              Cancel
+            </Button>
+
+            <Button
+              style={{ backgroundColor: '#2ea984' }}
+              className="hover:opacity-90 text-white"
+              onClick={confirmDeleteUser}
+            >
+              Delete
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }

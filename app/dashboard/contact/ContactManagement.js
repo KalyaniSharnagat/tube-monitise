@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { setCookie } from 'cookies-next';
+import { deleteCookie, setCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { Badge } from '@/components/ui/badge';
@@ -37,53 +37,41 @@ export function ContactManagement() {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [expandedMessage, setExpandedMessage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [totalPages, setTotalPages] = useState(0);
   const [page, setPage] = useState(1);
   const [searchString, setSearchString] = useState('');
+  const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
 
 
   const fetchContacts = async () => {
-  try {
-    setLoading(true);
-    const res = await communication.getQueryList(page, searchString);
+    try {
+      setLoading(true);
+      const res = await communication.getQueryList(page, searchString);
 
-    if (res?.data?.status === "SUCCESS") {
-      setContacts(res.data.contacts || []);
-    } else {
-      toast.error(res?.data?.message || "Failed to fetch contacts", {
-        position: 'top-right',
-        autoClose: 3000,
-      });
+      if (res?.data?.status === "SUCCESS") {
+        toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
+        setContacts(res.data.contacts);
+        setTotalPages(res.data.totalPages || 1);
+      } else if ('JWT_INVALID' === res.data.status) {
+        toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
+        deleteCookie('auth');
+        deleteCookie('userDetails');
+        setTimeout(() => {  
+          router.push('/login');
+        }, 1000);
+      } else {
+        toast.warning(res.data.message, {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching contacts:", err.response?.data);
       setContacts([]);
+    } finally {
+      setLoading(false);
     }
-
-  } catch (err) {
-    console.error("Error fetching contacts:", err.response?.data);
-
-    const apiStatus = err.response?.data?.status;
-    const message = err.response?.data?.message || "Error fetching contacts";
-
-    toast.error(message, {
-      position: 'top-right',
-      autoClose: 3000,
-    });
-
-    
-    if (apiStatus === "JWT_INVALID") {
-      setCookie('auth', '', { maxAge: -1, path: '/' });
-      setCookie('userDetails', '', { maxAge: -1, path: '/' });
-
-      setTimeout(() => {
-        router.push('/login');
-      }, 1500);
-    }
-
-    setContacts([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     fetchContacts();
@@ -295,97 +283,153 @@ export function ContactManagement() {
       {/* Edit Modal */}
       {/* Edit Modal */}
       <Dialog open={openEditModal} onOpenChange={setOpenEditModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Contact</DialogTitle>
-          </DialogHeader>
-          {selectedContact && (
-            <div className="space-y-4">
-              {/* Subject 👇 New field */}
-              <div>
-                <label className="text-sm font-medium">Subject</label>
-                <Input
-                  type="text"
-                  value={selectedContact.subject}
-                  onChange={(e) =>
-                    setSelectedContact({ ...selectedContact, subject: e.target.value })
-                  }
-                  className="mt-2"
-                />
-              </div>
+  <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
+    {/* Header */}
+    <div
+      className="text-white flex justify-between items-center px-4 py-2"
+      style={{ backgroundColor: '#2ea984' }}
+    >
+      <h3 className="font-semibold text-lg">Edit Contact</h3>
+      <button
+        className="text-white text-xl font-bold"
+        onClick={() => setOpenEditModal(false)}
+      >
+        ×
+      </button>
+    </div>
 
-              {/* Message */}
-              <div>
-                <label className="text-sm font-medium">Message</label>
-                <Textarea
-                  value={selectedContact.message}
-                  onChange={(e) =>
-                    setSelectedContact({ ...selectedContact, message: e.target.value })
-                  }
-                  className="mt-2"
-                />
-              </div>
+    {/* Body */}
+    {selectedContact && (
+      <div className="p-4 space-y-4">
+        {/* Subject */}
+        <div>
+          <label className="text-sm font-medium">Subject</label>
+          <Input
+            type="text"
+            value={selectedContact.subject}
+            onChange={(e) =>
+              setSelectedContact({ ...selectedContact, subject: e.target.value })
+            }
+            className="mt-2"
+          />
+        </div>
 
-              {/* Status */}
-              <div>
-                <label className="text-sm font-medium">Status</label>
-                <Select
-                  value={selectedContact.status}
-                  onValueChange={(val) =>
-                    setSelectedContact({ ...selectedContact, status: val })
-                  }
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Raised">Raised</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Resolved">Resolved</SelectItem>
-                    <SelectItem value="Closed">Closed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        {/* Message */}
+        <div>
+          <label className="text-sm font-medium">Message</label>
+          <Textarea
+            value={selectedContact.message}
+            onChange={(e) =>
+              setSelectedContact({ ...selectedContact, message: e.target.value })
+            }
+            className="mt-2"
+          />
+        </div>
 
-              {/* Remarks */}
-              <div>
-                <label className="text-sm font-medium">Remarks</label>
-                <Textarea
-                  placeholder="Enter remarks..."
-                  value={selectedContact.remarks || ""}
-                  onChange={(e) =>
-                    setSelectedContact({ ...selectedContact, remarks: e.target.value })
-                  }
-                  className="mt-2"
-                  required
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button onClick={handleSave}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        {/* Status */}
+        <div>
+          <label className="text-sm font-medium">Status</label>
+          <Select
+            value={selectedContact.status}
+            onValueChange={(val) =>
+              setSelectedContact({ ...selectedContact, status: val })
+            }
+          >
+            <SelectTrigger className="mt-2">
+              <SelectValue placeholder="Select Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Raised">Raised</SelectItem>
+              <SelectItem value="In Progress">In Progress</SelectItem>
+              <SelectItem value="Resolved">Resolved</SelectItem>
+              <SelectItem value="Closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Remarks */}
+        <div>
+          <label className="text-sm font-medium">Remarks</label>
+          <Textarea
+            placeholder="Enter remarks..."
+            value={selectedContact.remarks || ""}
+            onChange={(e) =>
+              setSelectedContact({ ...selectedContact, remarks: e.target.value })
+            }
+            className="mt-2"
+            required
+          />
+        </div>
+      </div>
+    )}
+
+    {/* Footer */}
+    <DialogFooter className="flex justify-center gap-4 p-4">
+      <Button
+        variant="outline"
+        onClick={() => setOpenEditModal(false)}
+        className="border-[#565e64] text-[#565e64] hover:bg-[#565e64] hover:text-white"
+      >
+        Cancel
+      </Button>
+      <Button
+        style={{ backgroundColor: '#2ea984' }}
+        className="hover:opacity-90 text-white"
+        onClick={handleSave}
+      >
+        Save
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
 
 
       {/* Delete Confirmation Modal */}
       <Dialog open={openDeleteModal} onOpenChange={setOpenDeleteModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Delete</DialogTitle>
-          </DialogHeader>
-          <p>Are you sure you want to delete this contact?</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpenDeleteModal(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+  <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
+    {/* Header */}
+    <div
+      className="text-white flex justify-between items-center px-4 py-2"
+      style={{ backgroundColor: '#2ea984' }}
+    >
+      <h3 className="font-semibold text-lg">Confirm Delete</h3>
+      <button
+        className="text-white text-xl font-bold"
+        onClick={() => setOpenDeleteModal(false)}
+      >
+        ×
+      </button>
+    </div>
+
+    {/* Body */}
+    <div className="p-4 text-center">
+      <p className="text-gray-700">
+        Are you sure you want to delete this contact?
+      </p>
+    </div>
+
+    {/* Footer */}
+    <DialogFooter className="flex justify-center gap-4 p-4">
+      <Button
+        variant="outline"
+        onClick={() => setOpenDeleteModal(false)}
+        className="border-[#565e64] text-[#565e64] hover:bg-[#565e64] hover:text-white"
+      >
+        Cancel
+      </Button>
+
+      <Button
+        style={{ backgroundColor: '#2ea984' }}
+        className="hover:opacity-90 text-white"
+        onClick={confirmDelete}
+      >
+        Delete
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
     </div>
   );
 }
