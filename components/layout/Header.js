@@ -69,9 +69,9 @@ export function Header({ activeSection, onToggleSidebar, isSidebarCollapsed }) {
     }
   }, [socket]);
 
-  useEffect(() => {
-    fetchNotificationCount();
-  }, []);
+  // useEffect(() => {
+  //   fetchNotificationCount();
+  // }, []);
 
   return (
     <header className="h-14 md:h-16 sticky top-0 z-30 bg-white dark:bg-gray-800 border-b border-border shadow-sm">

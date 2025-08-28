@@ -39,7 +39,7 @@ export function UserManagement() {
 
   const fetchUsers = async () => {
     try {
-      const res = await communication.getUserList({ id: "", page: 1, searchString: "" });
+      const res = await communication.getUserList({ page: 1, searchString: "" });
 
       if (res?.data?.status === 'SUCCESS') {
         toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
@@ -76,7 +76,7 @@ export function UserManagement() {
 
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, searchQuery]);
+  }, [currentPage]);
 
 
   const openViewModal = (user) => {

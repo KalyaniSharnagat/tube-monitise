@@ -53,7 +53,6 @@ export function CoinManagement() {
   };
 
   const fetchCoins = async () => {
-
     try {
       setLoading(true);
       const res = await communication.getCoinSlotList({
@@ -73,10 +72,7 @@ export function CoinManagement() {
           router.push('/login');
         }, 1000);
       } else {
-        toast.warning(res.data.message, {
-          position: 'top-right',
-          autoClose: 3000,
-        });
+        toast.warning(res.data.message, { position: 'top-right', autoClose: 3000 });
       }
     } catch (error) {
       console.error("Error Response:", error.response?.data);
@@ -87,9 +83,7 @@ export function CoinManagement() {
   };
 
 
-  useEffect(() => {
-    fetchCoins();
-  }, []);
+
 
 
   const handleSaveCoin = async () => {
@@ -143,15 +137,11 @@ export function CoinManagement() {
   const handleSearch = (value) => {
     setSearchQuery(value);
     setCurrentPage(1); // Reset to first page
-
-    clearTimeout(timeoutId);
-    const _timeoutId = setTimeout(() => {
-      fetchCoins();
-    }, 2000); // Debounce time
-    setTimeoutId(_timeoutId);
   };
 
-
+    useEffect(() => {
+    fetchCoins();
+  }, []);
 
   return (
     <div className="space-y-6">
