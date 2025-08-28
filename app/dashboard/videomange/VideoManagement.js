@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { setCookie } from 'cookies-next';
+import { deleteCookie, setCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 
@@ -48,8 +48,18 @@ export function VideoManagement() {
     const res = await communication.getVideoListForAdmin(page, searchString);
 
     if (res?.data?.status === 'SUCCESS') {
+       toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
       setVideos(res.data.videos || []);
-    } else {
+    } 
+    else if ('JWT_INVALID' === res.data.status) {
+        toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
+        deleteCookie('auth');
+        deleteCookie('userDetails');
+         setTimeout(() => {
+        router.push('/login');
+      }, 1000);
+      }
+    else {
       toast.error(res?.data?.message || 'Failed to fetch videos', {
         position: 'top-right',
         autoClose: 3000,
@@ -59,24 +69,7 @@ export function VideoManagement() {
   } catch (error) {
     console.error('Error fetching videos:', error.response?.data);
 
-    const apiStatus = error.response?.data?.status;
-    const message = error.response?.data?.message || 'Error fetching videos';
-
-    toast.error(message, {
-      position: 'top-right',
-      autoClose: 3000,
-    });
-
-    // ✅ Handle JWT Invalid
-    if (apiStatus === 'JWT_INVALID') {
-      setCookie(null, 'auth', '', { maxAge: -1, path: '/' });
-      setCookie(null, 'userDetails', '', { maxAge: -1, path: '/' });
-
-      setTimeout(() => {
-        router.push('/login');
-      }, 1500);
-    }
-
+    
     setVideos([]);
   } finally {
     setLoading(false);
@@ -337,22 +330,48 @@ export function VideoManagement() {
       </div>
 
       {/* Delete Confirmation Modal */}
-      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Delete</DialogTitle>
-          </DialogHeader>
-          <p>Are you sure you want to delete this video?</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+     <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+  <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
+    {/* Header */}
+    <div
+      className="text-white flex justify-between items-center px-4 py-2"
+      style={{ backgroundColor: '#2ea984' }}
+    >
+      <h3 className="font-semibold text-lg">Confirm Delete</h3>
+      <button
+        className="text-white text-xl font-bold"
+        onClick={() => setDeleteModalOpen(false)}
+      >
+        ×
+      </button>
+    </div>
+
+    {/* Body */}
+    <div className="p-4 text-center">
+      <p className="text-gray-700">Are you sure you want to delete this video?</p>
+    </div>
+
+    {/* Footer */}
+    <DialogFooter className="flex justify-center gap-4 p-4">
+      <Button
+        variant="outline"
+        onClick={() => setDeleteModalOpen(false)}
+        className="border-[#565e64] text-[#565e64] hover:bg-[#565e64] hover:text-white"
+      >
+        Cancel
+      </Button>
+
+      <Button
+        style={{ backgroundColor: '#2ea984' }}
+        className="hover:opacity-90 text-white"
+        onClick={handleDeleteConfirm}
+      >
+        Delete
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
     </div>
   );
 }
