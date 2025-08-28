@@ -35,12 +35,14 @@ export function Notification() {
 
     if (res?.data?.status === 'SUCCESS') {
       setNotifications(res.data.notifications || []);
+       setTotalPages(res.data.totalPages || 0); 
     } else {
       toast.warning(res.data.message || 'Failed to fetch notifications', {
         position: 'top-right',
         autoClose: 3000,
       });
       setNotifications([]);
+      setTotalPages(0);
     }
   } catch (error) {
     console.error('Error fetching notifications:', error.response?.data);
@@ -63,6 +65,7 @@ export function Notification() {
     }
 
     setNotifications([]);
+    setTotalPages(0);
   } finally {
     setLoading(false);
   }
@@ -306,7 +309,7 @@ const confirmBulkDelete = async () => {
                           className="p-2"
                           onClick={() => handleDeleteClick(notification.id)}
                         >
-                          <Trash2 className="w-4 h-4 text-red-600" />
+                          <Trash2 className="w-5 h-5" />
                         </Button>
                       </td>
                     </tr>

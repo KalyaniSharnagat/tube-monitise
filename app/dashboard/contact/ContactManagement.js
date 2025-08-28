@@ -44,46 +44,49 @@ export function ContactManagement() {
 
 
   const fetchContacts = async () => {
-  try {
-    setLoading(true);
-    const res = await communication.getQueryList(page, searchString);
+    try {
+      setLoading(true);
+      const res = await communication.getQueryList(page, searchString);
 
-    if (res?.data?.status === "SUCCESS") {
-      setContacts(res.data.contacts || []);
-    } else {
-      toast.error(res?.data?.message || "Failed to fetch contacts", {
+      if (res?.data?.status === "SUCCESS") {
+        setContacts(res.data.contacts || []);
+        setTotalPages(res.data.totalPages || 0);
+      } else {
+        toast.error(res?.data?.message || "Failed to fetch contacts", {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+        setContacts([]);
+        setTotalPages(0);
+      }
+
+    } catch (err) {
+      console.error("Error fetching contacts:", err.response?.data);
+
+      const apiStatus = err.response?.data?.status;
+      const message = err.response?.data?.message || "Error fetching contacts";
+
+      toast.error(message, {
         position: 'top-right',
         autoClose: 3000,
       });
+
+
+      if (apiStatus === "JWT_INVALID") {
+        setCookie('auth', '', { maxAge: -1, path: '/' });
+        setCookie('userDetails', '', { maxAge: -1, path: '/' });
+
+        setTimeout(() => {
+          router.push('/login');
+        }, 1500);
+      }
+
       setContacts([]);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
     }
-
-  } catch (err) {
-    console.error("Error fetching contacts:", err.response?.data);
-
-    const apiStatus = err.response?.data?.status;
-    const message = err.response?.data?.message || "Error fetching contacts";
-
-    toast.error(message, {
-      position: 'top-right',
-      autoClose: 3000,
-    });
-
-    
-    if (apiStatus === "JWT_INVALID") {
-      setCookie('auth', '', { maxAge: -1, path: '/' });
-      setCookie('userDetails', '', { maxAge: -1, path: '/' });
-
-      setTimeout(() => {
-        router.push('/login');
-      }, 1500);
-    }
-
-    setContacts([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     fetchContacts();
@@ -148,13 +151,13 @@ export function ContactManagement() {
 
   return (
     <div className="space-y-6">
-       <p className="text-lg font-semibold">Query Management</p>
+      <p className="text-lg font-semibold">Query Management</p>
       {/* Search Box */}
       <Card>
         <CardContent className="p-6">
 
           <div className="flex items-center justify-between gap-2 w-full">
-           
+
             <input
               type="text"
               placeholder="Search query..."
@@ -168,7 +171,7 @@ export function ContactManagement() {
               className="border p-2 rounded-md w-1/3"
             />
 
-            
+
             {totalPages > 0 && (
               <div className="flex items-center gap-2 text-sm pe-5">
                 <Button
@@ -231,7 +234,15 @@ export function ContactManagement() {
                   {contacts.map((contact, index) => (
                     <tr key={contact.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="p-3 text-sm">{index + 1}</td>
-                      <td className="p-3 text-sm">{contact.name}</td>
+                      <td className="p-3 text-sm">
+                        {contact.name
+                          ? contact.name
+                            .toLowerCase()
+                            .split(" ")
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(" ")
+                          : ""}
+                      </td>
                       <td className="p-3 text-sm">{contact.email}</td>
                       <td className="p-3 text-sm">{contact.subject}</td>
                       <td className="p-3 text-sm">
