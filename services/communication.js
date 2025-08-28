@@ -501,6 +501,26 @@ export const communication = {
     }
   },
 
+getAdminById: async (adminId) => {
+  try {
+    return await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/admin/get-admin-by-id`,
+      { id: adminId },  
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("auth")}`,
+        },
+      }
+    );
+  } catch (error) {
+    toast.error(error.message);
+    throw error;
+  }
+},
+
+
+
 
 }
 

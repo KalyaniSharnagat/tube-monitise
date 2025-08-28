@@ -136,7 +136,7 @@ export function ContactManagement() {
 
   return (
     <div className="space-y-6">
-       <p className="text-lg font-semibold">Query Management</p>
+      <p className="text-lg font-semibold">Query Management</p>
       {/* Search Box */}
       <Card>
     <CardContent className="p-6 space-y-4">

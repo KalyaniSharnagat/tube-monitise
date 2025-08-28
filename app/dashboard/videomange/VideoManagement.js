@@ -42,39 +42,57 @@ export function VideoManagement() {
   const [selectedVideoId, setSelectedVideoId] = useState(null);
   const router = useRouter();
 
-  const fetchVideos = async () => {
+const fetchVideos = async () => {
   try {
     setLoading(true);
     const res = await communication.getVideoListForAdmin(page, searchString);
 
     if (res?.data?.status === 'SUCCESS') {
-       toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
+      toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
       setVideos(res.data.videos || []);
-    } 
-    else if ('JWT_INVALID' === res.data.status) {
-        toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
-        deleteCookie('auth');
-        deleteCookie('userDetails');
-         setTimeout(() => {
+      setTotalPages(res.data.totalPages || 0);
+    } else if (res?.data?.status === 'JWT_INVALID') {
+      toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
+      deleteCookie('auth');
+      deleteCookie('userDetails');
+      setTimeout(() => {
         router.push('/login');
       }, 1000);
-      }
-    else {
+    } else {
       toast.error(res?.data?.message || 'Failed to fetch videos', {
         position: 'top-right',
         autoClose: 3000,
       });
       setVideos([]);
+      setTotalPages(0);
     }
   } catch (error) {
     console.error('Error fetching videos:', error.response?.data);
 
-    
+    const apiStatus = error.response?.data?.status;
+    const message = error.response?.data?.message || 'Error fetching videos';
+
+    toast.error(message, {
+      position: 'top-right',
+      autoClose: 3000,
+    });
+
+    // ✅ Handle JWT Invalid
+    if (apiStatus === 'JWT_INVALID') {
+      deleteCookie('auth');
+      deleteCookie('userDetails');
+      setTimeout(() => {
+        router.push('/login');
+      }, 1500);
+    }
+
     setVideos([]);
+    setTotalPages(0);
   } finally {
     setLoading(false);
   }
 };
+
 
   const getYoutubeEmbedUrl = (url) => {
     try {
@@ -101,7 +119,8 @@ export function VideoManagement() {
   };
 
 
-  // ✅ Change Status Handler
+  //  Change Status Handler
+
   const handleChangeStatus = async (videoId) => {
     try {
       const res = await communication.changeVideoStatus(videoId);
@@ -109,10 +128,9 @@ export function VideoManagement() {
       if (res?.data?.status === "SUCCESS") {
         toast.success(res.data.message);
 
-
         setVideos((prev) =>
           prev.map((v) =>
-            v.id === videoId ? { ...v, status: res.data.newStatus } : v
+            v.id === videoId ? { ...v, isActive: !v.isActive } : v
           )
         );
       } else {
@@ -122,6 +140,7 @@ export function VideoManagement() {
       toast.error("Error changing status");
     }
   };
+
 
 
   const handleDeleteConfirm = async () => {
@@ -144,53 +163,53 @@ export function VideoManagement() {
 
   return (
 
-    
+
     <div className="space-y-6">
-       <p className="text-lg font-semibold">Video Management</p>
+      <p className="text-lg font-semibold">Video Management</p>
       {/* Search Box */}
-     <div className="flex items-center justify-between gap-2 w-full">
-  {/* Left Side → Search Input */}
-  <input
-    type="text"
-    placeholder="Search videos..."
-    value={searchString}
-    onChange={(e) => setSearchString(e.target.value)}
-    onKeyDown={(e) => {
-      if (e.key === "Enter") {
-        fetchVideos();
-      }
-    }}
-    className="border p-2 rounded-md w-1/3"
-  />
+      <div className="flex items-center justify-between gap-2 w-full">
+        {/* Left Side → Search Input */}
+        <input
+          type="text"
+          placeholder="Search videos..."
+          value={searchString}
+          onChange={(e) => setSearchString(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              fetchVideos();
+            }
+          }}
+          className="border p-2 rounded-md w-1/3"
+        />
 
-  {/* Right Side → Pagination */}
-  {totalPages > 0 && (
-    <div className="flex items-center gap-2 text-sm pe-5">
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={page === 1}
-        onClick={() => setPage((prev) => prev - 1)}
-      >
-        ‹
-      </Button>
+        {/* Right Side → Pagination */}
+        {totalPages > 0 && (
+          <div className="flex items-center gap-2 text-sm pe-5">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === 1}
+              onClick={() => setPage((prev) => prev - 1)}
+            >
+              ‹
+            </Button>
 
-      <span>
-        Page <span className="font-medium">{page}</span> of{" "}
-        <span className="font-medium">{totalPages}</span>
-      </span>
+            <span>
+              Page <span className="font-medium">{page}</span> of{" "}
+              <span className="font-medium">{totalPages}</span>
+            </span>
 
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={page === totalPages}
-        onClick={() => setPage((prev) => prev + 1)}
-      >
-        ›
-      </Button>
-    </div>
-  )}
-</div>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === totalPages}
+              onClick={() => setPage((prev) => prev + 1)}
+            >
+              ›
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* Loading State */}
       {loading && <p className="text-center">Loading videos...</p>}
@@ -233,7 +252,7 @@ export function VideoManagement() {
                     Disable
                   </Button>
                 ) : (
-                  <Button
+                  <Button 
                     size="sm"
                     className="bg-red-600 text-white hover:bg-red-700"
                     onClick={() => handleChangeStatus(video.id, "active")}
@@ -248,10 +267,10 @@ export function VideoManagement() {
               {/* Status Badge Left Side */}
               <div className="absolute top-2 left-2">
                 <Badge
-                  className={`${video.status === 'enable' ? 'bg-green-500' : 'bg-red-500'
+                  className={`${video.isActive ? 'bg-green-500' : 'bg-red-500'
                     } border-2 border-white shadow-lg text-white px-3 py-1 rounded-[30px]`}
-                > 
-                  {video.status === 'enable' ? 'Enable' : 'Disable'}
+                >
+                  {video.isActive ? 'Enable' : 'Disable'}
                 </Badge>
               </div>
 
@@ -294,7 +313,7 @@ export function VideoManagement() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
 
-                    {video.status === "enable" ? (
+                    {video.isActive ? (
                       <DropdownMenuItem
                         className="text-gray-600"
                         onClick={() => handleChangeStatus(video.id)}
@@ -311,6 +330,7 @@ export function VideoManagement() {
                         Enable
                       </DropdownMenuItem>
                     )}
+
 
 
                     {/* Delete with Modal */}

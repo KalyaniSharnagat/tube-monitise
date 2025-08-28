@@ -159,32 +159,40 @@ export function UserManagement() {
               <table className="min-w-[900px] w-full border-collapse">
                 <thead className="sticky top-0 z-10 bg-white dark:bg-gray-800">
                   <tr className="border-b">
-                    <th className="text-center p-4">Sr.No.</th>
-                    <th className="text-center p-4">User</th>
-                    <th className="text-center p-4">Email</th>
-                    <th className="text-center p-4">Google Id</th>
-                    <th className="text-center p-4">Referral Id</th>
-                    <th className="text-center p-4">Join Date</th>
-                    <th className="text-center p-4">Videos</th>
-                    <th className="text-center p-4">Coins</th>
-                    <th className="text-center p-4">Actions</th>
+                    <th className=" p-4">Sr.No.</th>
+                    <th className=" p-4">User</th>
+                    <th className=" p-4">Email</th>
+                    <th className=" p-4">Google Id</th>
+                    <th className=" p-4">Referral Id</th>
+                    <th className=" p-4">Join Date</th>
+                    <th className=" p-4">Videos</th>
+                    <th className=" p-4">Coins</th>
+                    <th className=" p-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedData.length > 0 ? paginatedData.map((user, index) => (
                     <tr key={user.userIds} className="border-b">
-                      <td className="p-4 whitespace-normal break-all">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                      <td className="p-4 whitespace-normal break-all">{user.name}</td>
-                      <td className="p-4 whitespace-normal break-all">{user.email}</td>
-                      <td className="p-4 whitespace-normal break-all">{user.googleId}</td>
-                      <td className="p-4 whitespace-normal break-all">{user.referralCode}</td>
-                      <td className="p-4 text-sm text-muted-foreground">{new Date(user.createdAt).toLocaleDateString()}</td>
-                      <td className="p-4">{user.videos}--</td>
-                      <td className="p-4">{user.coins}--</td>
-                      <td className="p-4 flex gap-2 items-center">
+                      <td className="p-3 text-sm whitespace-normal break-all">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                      <td className="p-3 text-sm whitespace-normal break-all">
+                        {user.name
+                          ? user.name
+                            .toLowerCase()
+                            .split(" ")
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(" ")
+                          : ""}
+                      </td>
+                      <td className="p-3 text-sm whitespace-normal break-all">{user.email}</td>
+                      <td className="p-3 text-sm whitespace-normal break-all">{user.googleId}</td>
+                      <td className="p-3 text-sm whitespace-normal break-all">{user.referralCode}</td>
+                      <td className="p-3 text-sm text-sm text-muted-foreground">{new Date(user.createdAt).toLocaleDateString()}</td>
+                      <td className="p-3 text-sm">{user.videos}--</td>
+                      <td className="p-3 text-sm">{user.coins}--</td>
+                      <td className="p-3 text-sm flex gap-2 items-center">
                         {/* View */}
                         <button size="icon" onClick={() => openViewModal(user)} >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-6 h-6" />
                         </button>
 
                         {/* Toggle Status */}
@@ -196,11 +204,21 @@ export function UserManagement() {
                             title={user.status === 'Active' ? 'Active' : 'Inactive'}
                           >
                             <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white 
-                ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
+                              className={`inline-block h-3 w-3 transform rounded-full bg-white 
+                             ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
                             />
                           </button>
                         </div>
+
+
+                        {/* Delete */}
+                        <button
+                          size="icon"
+                          onClick={() => openDeleteModal(user)}
+                          title="Delete User"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
 
                       </td>
                     </tr>
