@@ -139,146 +139,134 @@ export function ContactManagement() {
        <p className="text-lg font-semibold">Query Management</p>
       {/* Search Box */}
       <Card>
-        <CardContent className="p-6">
+    <CardContent className="p-6 space-y-4">
 
-          <div className="flex items-center justify-between gap-2 w-full">
-           
-            <input
-              type="text"
-              placeholder="Search query..."
-              value={searchString}
-              onChange={(e) => setSearchString(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  fetchVideos();
-                }
-              }}
-              className="border p-2 rounded-md w-1/3"
-            />
+      {/* Search + Pagination inside same Card */}
+      <div className="flex items-center justify-between gap-2 w-full">
+        {/* Search Input */}
+        <input
+          type="text"
+          placeholder="Search query..."
+          value={searchString}
+          onChange={(e) => setSearchString(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              fetchVideos();
+            }
+          }}
+          className="border p-2 rounded-md w-1/3"
+        />
 
-            
-            {totalPages > 0 && (
-              <div className="flex items-center gap-2 text-sm pe-5">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={page === 1}
-                  onClick={() => setPage((prev) => prev - 1)}
-                >
-                  ‹
-                </Button>
+        {/* Pagination */}
+        {totalPages > 0 && (
+          <div className="flex items-center gap-2 text-sm pe-5">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === 1}
+              onClick={() => setPage((prev) => prev - 1)}
+            >
+              ‹
+            </Button>
 
-                <span>
-                  Page <span className="font-medium">{page}</span> of{" "}
-                  <span className="font-medium">{totalPages}</span>
-                </span>
+            <span>
+              Page <span className="font-medium">{page}</span> of{" "}
+              <span className="font-medium">{totalPages}</span>
+            </span>
 
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={page === totalPages}
-                  onClick={() => setPage((prev) => prev + 1)}
-                >
-                  ›
-                </Button>
-              </div>
-            )}
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === totalPages}
+              onClick={() => setPage((prev) => prev + 1)}
+            >
+              ›
+            </Button>
           </div>
+        )}
+      </div>
 
-        </CardContent>
-
-      </Card>
-
-      {/* Loading State */}
-      {loading && <p className="text-center">Loading contacts...</p>}
-
-      {/* Empty State */}
-      {!loading && contacts.length === 0 && (
-        <p className="text-center">No contacts found.</p>
-      )}
-
-      {/* Contacts Table */}
-      {!loading && contacts.length > 0 && (
-        <Card>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-100 dark:bg-gray-800">
-                    <th className="p-3 text-left text-sm font-semibold">Sr. No</th>
-                    <th className="p-3 text-left text-sm font-semibold">Raised By</th>
-                    <th className="p-3 text-left text-sm font-semibold">Email</th>
-                    <th className="p-3 text-left text-sm font-semibold">Subject</th>
-                    <th className="p-3 text-left text-sm font-semibold">Message</th>
-                    <th className="p-3 text-left text-sm font-semibold">Status</th>
-                    <th className="p-3 text-left text-sm font-semibold">Raised Date</th>
-                    <th className="p-3 text-center text-sm font-semibold">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {contacts.map((contact, index) => (
-                    <tr key={contact.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="p-3 text-sm">{index + 1}</td>
-                      <td className="p-3 text-sm">{contact.name}</td>
-                      <td className="p-3 text-sm">{contact.email}</td>
-                      <td className="p-3 text-sm">{contact.subject}</td>
-                      <td className="p-3 text-sm">
-                        {expandedMessage === contact.id ? (
-                          <>
-                            {contact.message}{" "}
-                            <button
-                              className="font-bold ml-2"
-                              onClick={() => setExpandedMessage(null)}
-                            >
-                              Show Less
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            {contact.message.length > 40
-                              ? `${contact.message.substring(0, 40)}...`
-                              : contact.message}
-                            {contact.message.length > 40 && (
-                              <button
-                                className="font-bold ml-2"
-                                onClick={() => setExpandedMessage(contact.id)}
-                              >
-                                Read More
-                              </button>
-                            )}
-                          </>
-                        )}
-                      </td>
-                      <td className="p-3 text-sm">
-                        <Badge
-                          className={
-                            contact.status === 'Pending' ? 'bg-red-100 text-red-800' :
-                              contact.status === 'Resolved' ? 'bg-green-100 text-green-800' :
-                                'bg-yellow-100 text-yellow-800'
-                          }
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100 dark:bg-gray-800">
+              <th className="p-3 text-left text-sm font-semibold">Sr. No</th>
+              <th className="p-3 text-left text-sm font-semibold">Raised By</th>
+              <th className="p-3 text-left text-sm font-semibold">Email</th>
+              <th className="p-3 text-left text-sm font-semibold">Subject</th>
+              <th className="p-3 text-left text-sm font-semibold">Message</th>
+              <th className="p-3 text-left text-sm font-semibold">Status</th>
+              <th className="p-3 text-left text-sm font-semibold">Raised Date</th>
+              <th className="p-3 text-center text-sm font-semibold">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {contacts.map((contact, index) => (
+              <tr key={contact.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td className="p-3 text-sm">{index + 1}</td>
+                <td className="p-3 text-sm">{contact.name}</td>
+                <td className="p-3 text-sm">{contact.email}</td>
+                <td className="p-3 text-sm">{contact.subject}</td>
+                <td className="p-3 text-sm max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
+                  {expandedMessage === contact.id ? (
+                    <>
+                      <p className="whitespace-pre-wrap break-words">{contact.message}</p>
+                      <button
+                        className="text-blue-600 font-medium mt-1 hover:underline"
+                        onClick={() => setExpandedMessage(null)}
+                      >
+                        Show Less
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="line-clamp-2 whitespace-pre-wrap break-words">
+                        {contact.message}
+                      </p>
+                      {contact.message.length > 80 && (
+                        <button
+                          className="text-blue-600 font-medium mt-1 hover:underline"
+                          onClick={() => setExpandedMessage(contact.id)}
                         >
-                          {contact.status}
-                        </Badge>
-                      </td>
-                      <td className="p-3 text-sm">
-                        {new Date(contact.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="p-3 text-center flex items-center justify-center space-x-2">
-                        <Button size="sm" variant="ghost" onClick={() => handleEdit(contact)}>
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleDelete(contact)}>
-                          <Trash2 className="w-4 h-4 text-red-500 hover:text-white" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                          Read More
+                        </button>
+                      )}
+                    </>
+                  )}
+                </td>
+                <td className="p-3 text-sm">
+                  <Badge
+                    className={
+                      contact.status === "Pending"
+                        ? "bg-red-100 text-red-800"
+                        : contact.status === "Resolved"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }
+                  >
+                    {contact.status}
+                  </Badge>
+                </td>
+                <td className="p-3 text-sm">
+                  {new Date(contact.createdAt).toLocaleDateString()}
+                </td>
+                <td className="p-3 text-center flex items-center justify-center space-x-2">
+                  <Button size="sm" variant="ghost" onClick={() => handleEdit(contact)}>
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => handleDelete(contact)}>
+                    <Trash2 className="w-4 h-4 text-red-500 hover:text-white" />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </CardContent>
+  </Card>
+
 
       {/* Edit Modal */}
       {/* Edit Modal */}

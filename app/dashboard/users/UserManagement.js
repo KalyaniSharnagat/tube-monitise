@@ -192,7 +192,7 @@ export function UserManagement() {
                           <button
                             onClick={() => toggleStatus(user)}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full
-              ${user.status === 'Active' ? 'bg-green-500' : 'bg-gray-400'}`}
+              ${user.status === 'Active' ? 'bg-[#2ea984]' : 'bg-gray-400'}`}
                             title={user.status === 'Active' ? 'Active' : 'Inactive'}
                           >
                             <span
@@ -218,28 +218,57 @@ export function UserManagement() {
       </Card>
 
       {/* View Modal */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>User Details</DialogTitle>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
-              <div><strong>Name:</strong> {selectedUser.name}</div>
-              <div><strong>Email:</strong> {selectedUser.email}</div>
-              <div><strong>Google ID:</strong> {selectedUser.googleId}</div>
-              <div><strong>Referral ID:</strong> {selectedUser.referralCode}</div>
-              <div><strong>Status:</strong> <Badge className="bg-green-600 text-white">{selectedUser.status || "Inactive"}</Badge></div>
-              <div><strong>Join Date:</strong> {new Date(selectedUser.createdAt).toLocaleDateString()}</div>
-              <div><strong>Videos:</strong> {selectedUser.videos}</div>
-              <div><strong>Coins:</strong> {selectedUser.coins}</div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button className="bg-green-600 text-white  hover:bg-green-600" onClick={() => setIsModalOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+  <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
+    {/* Header */}
+    <div
+      className="text-white flex justify-between items-center px-4 py-2"
+      style={{ backgroundColor: '#2ea984' }}
+    >
+      <h3 className="font-semibold text-lg">User Details</h3>
+      <button
+        className="text-white text-xl font-bold"
+        onClick={() => setIsModalOpen(false)}
+      >
+        ×
+      </button>
+    </div>
+
+    {/* Body */}
+    {selectedUser && (
+      <div className="p-4 space-y-4">
+        <div><strong>Name:</strong> {selectedUser.name}</div>
+        <div><strong>Email:</strong> {selectedUser.email}</div>
+        <div><strong>Google ID:</strong> {selectedUser.googleId}</div>
+        <div><strong>Referral ID:</strong> {selectedUser.referralCode}</div>
+        <div>
+          <strong>Status:</strong>{' '}
+          <Badge className="bg-green-600 text-white">
+            {selectedUser.status || "Inactive"}
+          </Badge>
+        </div>
+        <div>
+          <strong>Join Date:</strong>{' '}
+          {new Date(selectedUser.createdAt).toLocaleDateString()}
+        </div>
+        <div><strong>Videos:</strong> {selectedUser.videos}</div>
+        <div><strong>Coins:</strong> {selectedUser.coins}</div>
+      </div>
+    )}
+
+    {/* Footer */}
+    <DialogFooter className="flex justify-center gap-4 p-4">
+      <Button
+        className="border-[#565e64] text-[#565e64] hover:bg-[#565e64] hover:text-white"
+        variant="outline"
+        onClick={() => setIsModalOpen(false)}
+      >
+        Close
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
 
       {/* Delete Modal */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
