@@ -150,7 +150,7 @@ export function CoinManagement() {
         </CardHeader>
 
         <CardContent className="p-0">
-          {/* Sticky FilterBar */}
+
           <div className="sticky top-0 z-20 bg-white">
             <FilterBar
               showSearch
@@ -170,16 +170,12 @@ export function CoinManagement() {
                     className="relative border-2 w-full h-auto"
                     style={{ borderColor: '#2ea984' }}
                   >
-
-                    {/* Delete Button */}
                     <button
                       onClick={() => openDeleteModal(pkg.id)}
                       className="absolute top-2 right-2 flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-600 hover:text-white"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
-
-
                     <CardContent className="p-4 md:p-5 text-center">
                       <div className="w-12 h-12 md:w-14 md:h-14 mx-auto mb-3 bg-yellow-100 rounded-full flex items-center justify-center">
                         <Coins className="w-6 h-6 text-yellow-600" />
@@ -216,8 +212,6 @@ export function CoinManagement() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-[500px] shadow-lg">
-
-            {/* Header with green strip */}
             <div className="flex items-center justify-between bg-[#2ea984] text-white px-4 py-3 rounded-t-lg">
               <h3 className="text-lg font-semibold">
                 {isEditing ? "Edit Coin Package" : "Add New Coin"}
@@ -236,7 +230,7 @@ export function CoinManagement() {
               </button>
             </div>
 
-            {/* Body */}
+
             <div className="p-6">
               <Input
                 placeholder="Coins"
@@ -256,8 +250,6 @@ export function CoinManagement() {
                 }
                 className="mb-3 no-spinner"
               />
-
-              {/* Footer Buttons */}
               <div className="flex justify-end space-x-2 mt-4">
                 <Button
                   variant="outline"
@@ -283,7 +275,7 @@ export function CoinManagement() {
       {/* Delete Confirmation Modal */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
-          {/* Custom Header */}
+
           <div
             className="text-white flex justify-between items-center px-4 py-2"
             style={{ backgroundColor: "#2ea984" }}
@@ -302,13 +294,9 @@ export function CoinManagement() {
               </svg>
             </button>
           </div>
-
-          {/* Body */}
           <div className="p-4 text-center">
             <p className="text-gray-700">Are you sure you want to delete this coin?</p>
           </div>
-
-          {/* Footer */}
           <DialogFooter className="flex justify-center gap-4 p-4">
             <Button
               variant="outline"

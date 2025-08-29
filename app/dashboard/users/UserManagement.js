@@ -169,7 +169,9 @@ export function UserManagement() {
                       <td className="p-4">{user["wallet.coins"] ?? '0'}</td>
                       <td className="p-4 flex gap-2 items-center">
                         {/* View */}
-                        <button size="icon" onClick={() => openViewModal(user)} >
+                        <button size="icon" 
+                        title="View Details "
+                        onClick={() => openViewModal(user)} >
                           <Eye className="w-6 h-6" />
                         </button>
 
@@ -178,14 +180,15 @@ export function UserManagement() {
                           <button
                             onClick={() => toggleStatus(user)}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full
-                            ${user.status === 'Active' ? 'bg-green-500' : 'bg-gray-400'}`}
+                       ${user.status === 'Active' ? 'bg-[#2ea984]' : 'bg-gray-400'}`}
                             title={user.status === 'Active' ? 'Active' : 'Inactive'}
                           >
                             <span
                               className={`inline-block h-4 w-4 transform rounded-full bg-white 
-                              ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
+                           ${user.status === 'Active' ? 'translate-x-5' : 'translate-x-1'}`}
                             />
                           </button>
+
                         </div>
 
 
@@ -222,13 +225,19 @@ export function UserManagement() {
             style={{ backgroundColor: '#2ea984' }}
           >
             <h3 className="font-semibold text-lg">User Details</h3>
-            <button
-              className="text-white text-xl font-bold"
-              onClick={() => setIsModalOpen(false)}
-            >
+            <button onClick={() => setIsModalOpen(false)}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
-
           {/* Body */}
           {selectedUser && (
             <div className="p-4 space-y-4">
@@ -238,9 +247,10 @@ export function UserManagement() {
               <div><strong>Referral ID:</strong> {selectedUser.referralCode}</div>
               <div>
                 <strong>Status:</strong>{' '}
-                <Badge className="bg-green-600 text-white">
+                <Badge className="bg-[#2ea984] text-white">
                   {selectedUser.status || "Inactive"}
                 </Badge>
+
               </div>
               <div>
                 <strong>Join Date:</strong>{' '}
@@ -274,11 +284,17 @@ export function UserManagement() {
             style={{ backgroundColor: '#2ea984' }}
           >
             <h3 className="font-semibold text-lg">Delete Confirmation</h3>
-            <button
-              className="text-white text-xl font-bold"
-              onClick={() => setDeleteModalOpen(false)}
-            >
-
+            <button onClick={() => setDeleteModalOpen(false)}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
 
