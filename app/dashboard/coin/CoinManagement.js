@@ -60,13 +60,31 @@ export function CoinManagement() {
       const res = await communication.getCoinSlotList(page, searchString?.trim());
 
       if (res?.data?.status === 'SUCCESS') {
-        setCoinPackages(res.data.slots);
-        toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
-      } else {
+        let slots = res.data.slots || [];
+        if (query) {
+          slots = slots.filter(slot =>
+            String(slot.amount).includes(query) ||
+            String(slot.coins).includes(query)
+          );
+        }
+        setCoinPackages(slots);
+        setTotalPages(res.data.totalPages || 1);
+      } 
+      else if ('JWT_INVALID' === res.data.status) {
+              toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
+              deleteCookie('auth');
+              deleteCookie('userDetails');
+              setTimeout(() => {
+                router.push('/login');
+              }, 1000);
+            }
+      
+      else {
+        toast.warning(res.data.message, { position: 'top-right', autoClose: 3000 });
         setCoinPackages([]);
         setTotalPages(1);
-        toast.warning(res.data.message, { position: 'top-right', autoClose: 3000 });
       }
+      
     } catch (error) {
       console.error("Error Response:", error.response?.data);
     } finally {
