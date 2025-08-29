@@ -13,8 +13,6 @@ import { deleteCookie, removeCookies, setCookie } from 'cookies-next';
 
 export function CoinManagement() {
   const [coinPackages, setCoinPackages] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredCoins, setFilteredCoins] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCoin, setNewCoin] = useState({ id: '', coins: '', price: '' });
   const [isEditing, setIsEditing] = useState(false);
@@ -40,14 +38,15 @@ export function CoinManagement() {
     setIsModalOpen(true);
   };
 
-  const handleSearch = (value) => {
-    setSearchQuery(value);
+  const handleSearch = (eOrValue) => {
+    const value = typeof eOrValue === "string" ? eOrValue : eOrValue?.target?.value || "";
     setCurrentPage(1);
+    setSearchString(value);
     clearTimeout(timeoutId);
-    const _timeoutId = setTimeout(() => {
-      fetchCoins(value, 1);
+    let _timeOutId = setTimeout(() => {
+      fetchCoins("1", value);
     }, 2000);
-    setTimeoutId(_timeoutId);
+    setTimeoutId(_timeOutId);
   };
 
   const openDeleteModal = (pkgId) => {
@@ -55,22 +54,17 @@ export function CoinManagement() {
     setDeleteModalOpen(true);
   };
 
-  const fetchCoins = async (query = searchQuery, page = currentPage) => {
+  const fetchCoins = async (page, searchString) => {
     try {
       setLoading(true);
-      const res = await communication.getCoinSlotList({ page, searchString: "" });
+      const res = await communication.getCoinSlotList(page, searchString?.trim());
 
       if (res?.data?.status === 'SUCCESS') {
-        let slots = res.data.slots || [];
-        if (query) {
-          slots = slots.filter(slot =>
-            String(slot.amount).includes(query) ||
-            String(slot.coins).includes(query)
-          );
-        }
-        setCoinPackages(slots);
-        setTotalPages(res.data.totalPages || 1);
+        setCoinPackages(res.data.slots);
+        toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
       } else {
+        setCoinPackages([]);
+        setTotalPages(1);
         toast.warning(res.data.message, { position: 'top-right', autoClose: 3000 });
       }
     } catch (error) {
@@ -167,11 +161,10 @@ export function CoinManagement() {
 
 
           {/* Only coins list scrolls */}
-          <div className="overflow-y-auto p-4 custom-scroll max-h-[calc(100dvh-16rem)]">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-              {coinPackages.length > 0 ? (
+          <div className="overflow-y-auto p-4 custom-scroll max-h-[calc(100vh-200px)]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {Array.isArray(coinPackages) && coinPackages.length > 0 ? (
                 coinPackages.map((pkg) => (
-
                   <Card
                     key={pkg.id}
                     className="relative border-2 w-full h-auto"

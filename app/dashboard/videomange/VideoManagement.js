@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { deleteCookie, setCookie } from 'cookies-next';
@@ -18,9 +18,10 @@ export function VideoManagement() {
   const [playingVideo, setPlayingVideo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [searchString, setSearchString] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedVideoId, setSelectedVideoId] = useState(null);
   const [timeoutId, setTimeoutId] = useState();
   const router = useRouter();
@@ -29,20 +30,21 @@ export function VideoManagement() {
     setPlayingVideo(playingVideo === id ? null : id);
   };
 
-  const handleSearch = (value) => {
-    setSearchQuery(value);
+  const handleSearch = (eOrValue) => {
+    const value = typeof eOrValue === "string" ? eOrValue : eOrValue?.target?.value || "";
     setCurrentPage(1);
+    setSearchString(value);
     clearTimeout(timeoutId);
-    const _timeoutId = setTimeout(() => {
-      fetchVideos(value, 1);
-    }, 2000); // debounce
-    setTimeoutId(_timeoutId);
+    let _timeOutId = setTimeout(() => {
+      fetchVideos("1", value);
+    }, 2000);
+    setTimeoutId(_timeOutId);
   };
 
-  const fetchVideos = async (query = searchQuery, page = currentPage) => {
+  const fetchVideos = async (page, searchString) => {
     try {
       setLoading(true);
-      const res = await communication.getVideoListForAdmin(page, searchString);
+      const res = await communication.getVideoListForAdmin(page, searchString?.trim());
 
       if (res?.data?.status === 'SUCCESS') {
         toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
@@ -145,135 +147,139 @@ export function VideoManagement() {
 
   useEffect(() => {
     fetchVideos();
-  }, [page, searchString]);
+  }, []);
 
   return (
     <div className="space-y-6">
-      <p className="text-lg font-semibold">Video Management</p>
-      {/* Search Box */}
-      <div className="sticky top-0 z-20 bg-white">
-        <FilterBar
-          showSearch
-          searchPlaceholder="Search Video..."
-          onSearchChange={handleSearch}
-        />
-      </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-4">
+          <CardTitle className="text-lg font-semibold">Video Management</CardTitle>
+          {/* Search Box */}
+        </CardHeader>
+        <CardContent>
+          <FilterBar
+            showSearch
+            searchPlaceholder="Search Video..."
+            onSearchChange={handleSearch}
+          />
 
-      {/* Loading State */}
-      {loading && <p className="text-center">Loading videos...</p>}
+          {/* Loading State */}
+          {loading && <p className="text-center">Loading videos...</p>}
 
-      {/* Empty State */}
-      {!loading && videos.length === 0 && (
-        <p className="text-center">No videos found.</p>
-      )}
+          {/* Empty State */}
+          {!loading && videos.length === 0 && (
+            <p className="text-center">No videos found.</p>
+          )}
 
-      {/* Videos Grid (scroll only inside this grid area) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto max-h-[calc(100dvh-14rem)] pr-1">
-        {videos.map((video) => (
-          <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="relative w-full h-48">
-              {playingVideo === video.id ? (
-                <iframe
-                  className="w-full h-full"
-                  src={`${getYoutubeEmbedUrl(video.videoUrl)}?autoplay=1`}
-                  title={video.title}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : (
-                <img
-                  src={`https://img.youtube.com/vi/${new URL(getYoutubeEmbedUrl(video.videoUrl)).pathname.split("/").pop()}/hqdefault.jpg`}
-                  alt={video.title}
-                  className="w-full h-48 object-cover"
-                />
-              )}
+          {/* Videos Grid (scroll only inside this grid area) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto max-h-[calc(100dvh-14rem)] pr-1">
+            {videos.map((video) => (
+              <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="relative w-full h-48">
+                  {playingVideo === video.id ? (
+                    <iframe
+                      className="w-full h-full"
+                      src={`${getYoutubeEmbedUrl(video.videoUrl)}?autoplay=1`}
+                      title={video.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <img
+                      src={`https://img.youtube.com/vi/${new URL(getYoutubeEmbedUrl(video.videoUrl)).pathname.split("/").pop()}/hqdefault.jpg`}
+                      alt={video.title}
+                      className="w-full h-48 object-cover"
+                    />
+                  )}
 
-              {/* Status Badge Left Side */}
-              <div className="absolute top-2 left-2">
-                <Badge
-                  className={`${video.isActive ? 'bg-green-500' : 'bg-red-500'
-                    } border-2 border-white shadow-lg text-white px-3 py-1 rounded-[30px]`}
-                >
-                  {video.isActive ? 'Enable' : 'Disable'}
-                </Badge>
-              </div>
-
-            </div>
-
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-lg mb-2 line-clamp-2">{video.title}</h3>
-
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <div className="flex items-center justify-between">
-                  <span>User: <span className="font-medium">{video.userName}</span></span>
-                  <span>Email: <span className="font-medium">{video.userEmail}</span></span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span>Watch Times: <span className="font-medium">{video.watchTimes}</span> times</span>
-                  <span>Cost: ₹<span className="text-green-600 font-medium">{video.cost}</span></span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span>Play Seconds: <span className="font-medium">{video.playSeconds}</span> sec</span>
-                  <span>Created Date: <span>{new Date(video.createdAt).toLocaleDateString()}</span></span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between mt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePreview(video.id)}
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  {playingVideo === video.id ? 'Stop' : 'Preview'}
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-
-                    {video.isActive ? (
-                      <DropdownMenuItem
-                        className="text-gray-600"
-                        onClick={() => handleChangeStatus(video.id)}
-                      >
-                        <XCircle className="w-4 h-4 mr-2" />
-                        Disable
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem
-                        className="text-gray-600"
-                        onClick={() => handleChangeStatus(video.id)}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Enable
-                      </DropdownMenuItem>
-                    )}
-
-                    {/* Delete with Modal */}
-                    <DropdownMenuItem
-                      className="text-gray-600"
-                      onClick={() => {
-                        setSelectedVideoId(video.id);
-                        setDeleteModalOpen(true);
-                      }}
+                  {/* Status Badge Left Side */}
+                  <div className="absolute top-2 left-2">
+                    <Badge
+                      className={`${video.isActive ? 'bg-green-500' : 'bg-red-500'
+                        } border-2 border-white shadow-lg text-white px-3 py-1 rounded-[30px]`}
                     >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                      {video.isActive ? 'Enable' : 'Disable'}
+                    </Badge>
+                  </div>
+
+                </div>
+
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-lg mb-2 line-clamp-2">{video.title}</h3>
+
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-center justify-between">
+                      <span>User: <span className="font-medium">{video.userName}</span></span>
+                      <span>Email: <span className="font-medium">{video.userEmail}</span></span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span>Watch Times: <span className="font-medium">{video.watchTimes}</span> times</span>
+                      <span>Cost: ₹<span className="text-green-600 font-medium">{video.cost}</span></span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span>Play Seconds: <span className="font-medium">{video.playSeconds}</span> sec</span>
+                      <span>Created Date: <span>{new Date(video.createdAt).toLocaleDateString()}</span></span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePreview(video.id)}
+                    >
+                      <Play className="w-4 h-4 mr-2" />
+                      {playingVideo === video.id ? 'Stop' : 'Preview'}
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+
+                        {video.isActive ? (
+                          <DropdownMenuItem
+                            className="text-gray-600"
+                            onClick={() => handleChangeStatus(video.id)}
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Disable
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            className="text-gray-600"
+                            onClick={() => handleChangeStatus(video.id)}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Enable
+                          </DropdownMenuItem>
+                        )}
+
+                        {/* Delete with Modal */}
+                        <DropdownMenuItem
+                          className="text-gray-600"
+                          onClick={() => {
+                            setSelectedVideoId(video.id);
+                            setDeleteModalOpen(true);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Delete Confirmation Modal */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
