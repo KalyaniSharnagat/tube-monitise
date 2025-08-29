@@ -102,27 +102,25 @@ if (typeof window !== "undefined") {
 
 // Export communication object with APIs
 export const communication = {
-  // Get Video List
-  getVideoListForAdmin: async (page = 1, searchString = "") => {
-    try {
-      const requestBody = { page, searchString };
-
-      return await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/video/get-video-list-for-admin`,
-        requestBody,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`, // same as login
-          },
-        }
-      );
-    } catch (error) {
-      toast.error(error.message);
-      throw error;
-    }
-  },
-
+    //   create  for given admin Information
+    getAdminById: async (adminId) => {
+  try {
+    return await axios.post(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/admin/get-admin-by-id`,
+      { id: adminId },  
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("auth")}`,
+        },
+      }
+    );
+  } catch (error) {
+    toast.error(error.message);
+    throw error;
+  }
+},
+  
   // Create User
   createUser: async (userData) => {
     try {
@@ -165,154 +163,7 @@ export const communication = {
       throw error;
     }
   },
-
-  // Get Query List
-  getQueryList: async (page = 1, searchString = "") => {
-    try {
-      const requestBody = { page, searchString };
-
-      return await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/get-query-list`,
-        requestBody,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-    } catch (error) {
-      toast.error(error.message);
-      throw error;
-    }
-  },
-  updateQuery: async (queryId, data) => {
-    try {
-      return await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/update-query`,
-        {
-          queryId,
-          ...data
-        },
-
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-    } catch (error) {
-      toast.error(error.message);
-      throw error;
-    }
-  },
-  deleteQuery: async (data) => {
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/delete-selected-query`,
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-
-      return response;
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error deleting coin package");
-      throw error;
-    }
-  },
-
-
-  createCoinSlot: async (coins, amount) => {
-    try {
-      const requestBody = { coins: Number(coins), amount: Number(amount) };
-
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/create-coin-slot`,
-        requestBody,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-
-      return response;
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error creating coin package");
-      throw error;
-    }
-  },
-  getCoinSlotList: async ({ page, searchString }) => {
-    try {
-      const requestBody = { page, searchString };
-
-      return await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/get-coin-slot-list`,
-        requestBody,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-    } catch (error) {
-
-      throw error;
-    }
-  },
-  updateCoinSlot: async (id, coins, amount) => {
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/update-coin-slot`,
-        {
-          id,
-          coins: Number(coins),
-          amount: Number(amount),
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-
-      return response;
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error updating coin package");
-      throw error;
-    }
-  },
-  deleteCoinSlot: async (slotIds) => {
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/delete-coin-slot`,
-        {
-          slotIds,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-
-      return response;
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error deleting coin package");
-      throw error;
-    }
-  },
-
+//   delete User
   deleteSelectedUser: async (userIds) => {
     try {
       const response = await axios.post(
@@ -331,128 +182,6 @@ export const communication = {
       return response;
     } catch (error) {
       toast.error(error.response?.data?.message || "Error deleting coin package");
-      throw error;
-    }
-  },
-  getAllNotification: async (page = 1, searchString = "") => {
-    try {
-      return await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/notification/get-all-notification`,
-        { page, searchString },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-    } catch (error) {
-      toast.error(error.message);
-      throw error;
-    }
-  },
-
-  getNotificationCount: async () => {
-    try {
-      return await axios.get(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/notification/get-notification-count`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-    } catch (error) {
-      toast.error(error.message);
-      throw error;
-    }
-  },
-  deleteAllNotification: async () => {
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/notification/delete-all-notification`,
-        {},
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-
-      return response;
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Error deleting all notifications"
-      );
-      throw error;
-    }
-  },
-  deleteSelectedNotification: async (notificationIds) => {
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/notification/delete-selected-notification`,
-        { notificationIds },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-
-      return response;
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Error deleting selected notifications"
-      );
-      throw error;
-    }
-  },
-
-  deleteVideo: async (videoId) => {
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/video/delete-video`,
-        { videoId: String(videoId) },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-
-      return response;
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Error deleting video"
-      );
-      throw error;
-    }
-  },
-
-  changeVideoStatus: async (videoId, status) => {
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/video/change-video-status`,
-        {
-          videoId: String(videoId),
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`,
-          },
-        }
-      );
-
-      return response;
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Error changing video status"
-      );
       throw error;
     }
   },
@@ -501,26 +230,305 @@ export const communication = {
     }
   },
 
-getAdminById: async (adminId) => {
-  try {
-    return await axios.post(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/admin/get-admin-by-id`,
-      { id: adminId },  
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getCookie("auth")}`,
+
+  // Get Query List
+  getQueryList: async (page = 1, searchString = "") => {
+    try {
+      const requestBody = { page, searchString };
+
+      return await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/get-query-list`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+  // update Query list
+  updateQuery: async (queryId, data) => {
+    try {
+      return await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/update-query`,
+        {
+          queryId,
+          ...data
         },
-      }
-    );
-  } catch (error) {
-    toast.error(error.message);
-    throw error;
-  }
-},
 
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+  // delete Query list
+  deleteQuery: async (data) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/contact/delete-selected-query`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
 
+      return response;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error deleting coin package");
+      throw error;
+    }
+  },
 
+  //  create Coin Slot
+  createCoinSlot: async (coins, amount) => {
+    try {
+      const requestBody = { coins: Number(coins), amount: Number(amount) };
 
-}
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/create-coin-slot`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
 
+      return response;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error creating coin package");
+      throw error;
+    }
+  },
+  // Get Coin Slot List
+  getCoinSlotList: async ({ page, searchString }) => {
+    try {
+      const requestBody = { page, searchString };
+
+      return await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/get-coin-slot-list`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+    } catch (error) {
+
+      throw error;
+    }
+  },
+  // update Coin Slot
+  updateCoinSlot: async (id, coins, amount) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/update-coin-slot`,
+        {
+          id,
+          coins: Number(coins),
+          amount: Number(amount),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error updating coin package");
+      throw error;
+    }
+  },
+  // delete Coin Slot
+  deleteCoinSlot: async (slotIds) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/coin-slot/delete-coin-slot`,
+        {
+          slotIds,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error deleting coin package");
+      throw error;
+    }
+  },
+
+  // Get Notification List
+  getAllNotification: async (page = 1, searchString = "") => {
+    try {
+      return await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/notification/get-all-notification`,
+        { page, searchString },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+// get Notification Count
+  getNotificationCount: async () => {
+    try {
+      return await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/notification/get-notification-count`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+  // delete Notification
+  deleteAllNotification: async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/notification/delete-all-notification`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Error deleting all notifications"
+      );
+      throw error;
+    }
+  },
+  // delete Selected Notification
+  deleteSelectedNotification: async (notificationIds) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/notification/delete-selected-notification`,
+        { notificationIds },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Error deleting selected notifications"
+      );
+      throw error;
+    }
+  },
+
+  // Get Video List
+  getVideoListForAdmin: async (page = 1, searchString = "") => {
+    try {
+      const requestBody = { page, searchString };
+
+      return await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/video/get-video-list-for-admin`,
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`, // same as login
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+
+  // delete Video
+  deleteVideo: async (videoId) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/video/delete-video`,
+        { videoId: String(videoId) },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Error deleting video"
+      );
+      throw error;
+    }
+  },
+
+  changeVideoStatus: async (videoId, status) => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/video/change-video-status`,
+        {
+          videoId: String(videoId),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Error changing video status"
+      );
+      throw error;
+    }
+  },
+
+};

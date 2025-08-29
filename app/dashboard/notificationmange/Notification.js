@@ -24,6 +24,7 @@ export function Notification() {
   const [searchString, setSearchString] = useState('');
   const [deleteId, setDeleteId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedMessage, setExpandedMessage] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
   const [selectedIds, setSelectedIds] = useState([]);
   const [bulkDeleteType, setBulkDeleteType] = useState(null);
@@ -198,9 +199,34 @@ export function Notification() {
                       </td>
                       <td className="p-4">{index + 1}</td>
                       <td className="p-4 font-medium">{notification.title}</td>
-                      <td className="p-4 text-sm text-muted-foreground">
-                        {notification.description}
+                      <td className="p-3 text-sm max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
+                        {expandedMessage === notification.id ? (
+                          <>
+                            <p className="whitespace-pre-wrap break-words">{notification.description}</p>
+                            <button
+                              className=" font-medium mt-1 hover:underline"
+                              onClick={() => setExpandedMessage(null)}
+                            >
+                              Show Less
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <p className="line-clamp-2 whitespace-pre-wrap break-words">
+                              {notification.description}
+                            </p>
+                            {notification.description.length > 50 && (
+                              <button
+                                className=" font-medium mt-1 hover:underline"
+                                onClick={() => setExpandedMessage(notification.id)}
+                              >
+                                .....
+                              </button>
+                            )}
+                          </>
+                        )}
                       </td>
+
                       <td className="p-4 text-sm text-muted-foreground">
                         {new Date(notification.createdAt).toLocaleString()}
                       </td>

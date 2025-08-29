@@ -47,8 +47,8 @@ export default function LoginPage() {
 
       if (serverResponse.ok && data?.token) {
         setCookie('auth', data.token);
-        if (data.userDetails) {
-          setCookie('userDetails', JSON.stringify(data.userDetails));
+        if (data.admin) {
+          setCookie('userDetails', JSON.stringify(data.admin));
         }
 
         if (values.remember) {

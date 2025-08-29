@@ -152,87 +152,97 @@ export function ContactManagement() {
             />
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-100 dark:bg-gray-800">
-                  <th className="p-3 text-left text-sm font-semibold">Sr. No</th>
-                  <th className="p-3 text-left text-sm font-semibold">Raised By</th>
-                  <th className="p-3 text-left text-sm font-semibold">Email</th>
-                  <th className="p-3 text-left text-sm font-semibold">Subject</th>
-                  <th className="p-3 text-left text-sm font-semibold">Message</th>
-                  <th className="p-3 text-left text-sm font-semibold">Status</th>
-                  <th className="p-3 text-left text-sm font-semibold">Raised Date</th>
-                  <th className="p-3 text-center text-sm font-semibold">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {contacts.map((contact, index) => (
-                  <tr key={contact.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="p-3 text-sm">{index + 1}</td>
-                    <td className="p-3 text-sm">{contact.name}</td>
-                    <td className="p-3 text-sm">{contact.email}</td>
-                    <td className="p-3 text-sm">{contact.subject}</td>
-                    <td className="p-3 text-sm max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
-                      {expandedMessage === contact.id ? (
-                        <>
-                          <p className="whitespace-pre-wrap break-words">{contact.message}</p>
-                          <button
-                            className="text-blue-600 font-medium mt-1 hover:underline"
-                            onClick={() => setExpandedMessage(null)}
-                          >
-                            Show Less
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <p className="line-clamp-2 whitespace-pre-wrap break-words">
-                            {contact.message}
-                          </p>
-                          {contact.message.length > 80 && (
-                            <button
-                              className="text-blue-600 font-medium mt-1 hover:underline"
-                              onClick={() => setExpandedMessage(contact.id)}
-                            >
-                              Read More
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </td>
-                    <td className="p-3 text-sm">
-                      <Badge
-                        className={
-                          contact.status === "Pending"
-                            ? "bg-red-100 text-red-800"
-                            : contact.status === "Resolved"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
-                        }
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100 dark:bg-gray-800">
+              <th className="p-3 text-left text-sm font-semibold">Sr. No</th>
+              <th className="p-3 text-left text-sm font-semibold">Raised By</th>
+              <th className="p-3 text-left text-sm font-semibold">Email</th>
+              <th className="p-3 text-left text-sm font-semibold">Subject</th>
+              <th className="p-3 text-left text-sm font-semibold">Message</th>
+              <th className="p-3 text-left text-sm font-semibold">Status</th>
+              <th className="p-3 text-left text-sm font-semibold">Raised Date</th>
+              <th className="p-3 text-center text-sm font-semibold">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {contacts.map((contact, index) => (
+              <tr key={contact.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td className="p-3 text-sm">{index + 1}</td>
+               <td className="p-3 text-sm ">
+                        {contact.name
+                          ? contact.name
+                            .toLowerCase()
+                            .split(" ")
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(" ")
+                          : ""}
+                      </td>
+                <td className="p-3 text-sm">{contact.email}</td>
+                <td className="p-3 text-sm">{contact.subject}</td>
+                <td className="p-3 text-sm max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
+                  {expandedMessage === contact.id ? (
+                    <>
+                      <p className="whitespace-pre-wrap break-words">{contact.message}</p>
+                      <button
+                        className=" font-medium mt-1 hover:underline"
+                        onClick={() => setExpandedMessage(null)}
                       >
-                        {contact.status}
-                      </Badge>
-                    </td>
-                    <td className="p-3 text-sm">
-                      {new Date(contact.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="p-3 text-center flex items-center justify-center space-x-2">
-                      <Button size="sm" variant="ghost" onClick={() => handleEdit(contact)}>
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => handleDelete(contact)}>
-                        <Trash2 className="w-4 h-4 text-red-500 hover:text-white" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                        Show Less
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="line-clamp-2 whitespace-pre-wrap break-words">
+                        {contact.message}
+                      </p>
+                      {contact.message.length > 20 && (
+                        <button
+                          className=" font-medium mt-1 hover:underline"
+                          onClick={() => setExpandedMessage(contact.id)}
+                        >
+                          ......
+                        </button>
+                      )}
+                    </>
+                  )}
+                </td>
+                <td className="p-3 text-sm">
+                  <Badge
+                    className={
+                      contact.status === "Pending"
+                        ? "bg-red-100 text-red-800"
+                        : contact.status === "Resolved"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }
+                  >
+                    {contact.status}
+                  </Badge>
+                </td>
+                <td className="p-3 text-sm">
+                  {new Date(contact.createdAt).toLocaleDateString()}
+                </td>
+                <td className="p-3 text-center flex items-center justify-center space-x-2">
+                  <Button size="sm" variant="ghost" onClick={() => handleEdit(contact)}>
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => handleDelete(contact)}>
+                    <Trash2 className="w-4 h-4 text-red-500 hover:text-white" />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </CardContent>
+  </Card>
 
+
+     
       {/* Edit Modal */}
       <Dialog open={openEditModal} onOpenChange={setOpenEditModal}>
         <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
