@@ -56,6 +56,7 @@ export function VideoManagement() {
   const handleSearch = (value) => {
     setSearchQuery(value);
     setCurrentPage(1);
+    setSearchString(value);
     clearTimeout(timeoutId);
     const _timeoutId = setTimeout(() => {
       fetchVideos(value, 1);
