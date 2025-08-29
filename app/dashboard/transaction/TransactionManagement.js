@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Search, 
-  Filter, 
+import {
+  Search,
+  Filter,
   Download,
   CreditCard,
   DollarSign,
@@ -246,9 +246,8 @@ export function TransactionManagement({ currentPage, setCurrentPage }) {
                     </td>
                     <td className="p-4">
                       <div>
-                        <span className={`font-medium ${
-                          transaction.amount.startsWith('-') ? 'text-red-600' : 'text-green-600'
-                        }`}>
+                        <span className={`font-medium ${transaction.amount.startsWith('-') ? 'text-red-600' : 'text-green-600'
+                          }`}>
                           {transaction.amount}
                         </span>
                         {transaction.coins !== 0 && (
@@ -264,9 +263,9 @@ export function TransactionManagement({ currentPage, setCurrentPage }) {
                     <td className="p-4">
                       <Badge className={
                         transaction.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                        transaction.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                        transaction.status === 'Failed' ? 'bg-red-100 text-red-800' :
-                        'bg-blue-100 text-blue-800'
+                          transaction.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                            transaction.status === 'Failed' ? 'bg-red-100 text-red-800' :
+                              'bg-blue-100 text-blue-800'
                       }>
                         {transaction.status}
                       </Badge>

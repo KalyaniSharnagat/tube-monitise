@@ -20,9 +20,18 @@ export function UserManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const router = useRouter();
-
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+
+  const openDeleteModal = (user) => {
+    setUserToDelete(user);
+    setDeleteModalOpen(true);
+  };
+
+  const openViewModal = (user) => {
+    setSelectedUser(user);
+    setIsModalOpen(true);
+  };
 
   const filteredData = useMemo(() => {
     return users.filter(user =>
@@ -63,10 +72,8 @@ export function UserManagement() {
         });
         setUsers([]);
       }
-
     } catch (err) {
       console.error('Error fetching users:', err.response?.data);
-
       setUsers([]);
     }
     finally {
@@ -74,22 +81,11 @@ export function UserManagement() {
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, [currentPage]);
-
-
-  const openViewModal = (user) => {
-    setSelectedUser(user);
-    setIsModalOpen(true);
-  };
-
   const toggleStatus = async (user) => {
     try {
       const response = await communication.changeUserStatus(user.id); // use 'id' from object
 
       if (response?.data?.status === "SUCCESS") {
-        // Update local state immediately
         setUsers(prev =>
           prev.map(u =>
             u.id === user.id
@@ -107,20 +103,12 @@ export function UserManagement() {
     }
   };
 
-
-  const openDeleteModal = (user) => {
-    setUserToDelete(user);
-    setDeleteModalOpen(true);
-  };
-
   const confirmDeleteUser = async () => {
     if (!userToDelete?.id) {
       toast.error("Invalid user selected");
       return;
     }
-
     try {
-      // Pass an array of IDs
       const res = await communication.deleteSelectedUser([userToDelete.id]);
 
       if (res?.data?.status === "SUCCESS") {
@@ -137,6 +125,10 @@ export function UserManagement() {
       setUserToDelete(null);
     }
   };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [currentPage]);
 
   return (
     <div className="space-y-6">
@@ -210,7 +202,7 @@ export function UserManagement() {
                           title="Delete User"
                         >
                           <Trash2 className="w-5 h-5" />
-                        </button> 
+                        </button>
 
                       </td>
                     </tr>
@@ -228,56 +220,55 @@ export function UserManagement() {
       </Card>
 
       {/* View Modal */}
-     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-  <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
-    {/* Header */}
-    <div
-      className="text-white flex justify-between items-center px-4 py-2"
-      style={{ backgroundColor: '#2ea984' }}
-    >
-      <h3 className="font-semibold text-lg">User Details</h3>
-      <button
-        className="text-white text-xl font-bold"
-        onClick={() => setIsModalOpen(false)}
-      >
-        ×
-      </button>
-    </div>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
+          {/* Header */}
+          <div
+            className="text-white flex justify-between items-center px-4 py-2"
+            style={{ backgroundColor: '#2ea984' }}
+          >
+            <h3 className="font-semibold text-lg">User Details</h3>
+            <button
+              className="text-white text-xl font-bold"
+              onClick={() => setIsModalOpen(false)}
+            >
+            </button>
+          </div>
 
-    {/* Body */}
-    {selectedUser && (
-      <div className="p-4 space-y-4">
-        <div><strong>Name:</strong> {selectedUser.name}</div>
-        <div><strong>Email:</strong> {selectedUser.email}</div>
-        <div><strong>Google ID:</strong> {selectedUser.googleId}</div>
-        <div><strong>Referral ID:</strong> {selectedUser.referralCode}</div>
-        <div>
-          <strong>Status:</strong>{' '}
-          <Badge className="bg-green-600 text-white">
-            {selectedUser.status || "Inactive"}
-          </Badge>
-        </div>
-        <div>
-          <strong>Join Date:</strong>{' '}
-          {new Date(selectedUser.createdAt).toLocaleDateString()}
-        </div>
-        <div><strong>Videos:</strong> {selectedUser.videos}</div>
-        <div><strong>Coins:</strong> {selectedUser.coins}</div>
-      </div>
-    )}
+          {/* Body */}
+          {selectedUser && (
+            <div className="p-4 space-y-4">
+              <div><strong>Name:</strong> {selectedUser.name}</div>
+              <div><strong>Email:</strong> {selectedUser.email}</div>
+              <div><strong>Google ID:</strong> {selectedUser.googleId}</div>
+              <div><strong>Referral ID:</strong> {selectedUser.referralCode}</div>
+              <div>
+                <strong>Status:</strong>{' '}
+                <Badge className="bg-green-600 text-white">
+                  {selectedUser.status || "Inactive"}
+                </Badge>
+              </div>
+              <div>
+                <strong>Join Date:</strong>{' '}
+                {new Date(selectedUser.createdAt).toLocaleDateString()}
+              </div>
+              <div><strong>Videos:</strong> {selectedUser.totalVideos}</div>
+              <div><strong>Coins:</strong> {selectedUser["wallet.coins"]}</div>
+            </div>
+          )}
 
-    {/* Footer */}
-    <DialogFooter className="flex justify-center gap-4 p-4">
-      <Button
-        className="border-[#565e64] text-[#565e64] hover:bg-[#565e64] hover:text-white"
-        variant="outline"
-        onClick={() => setIsModalOpen(false)}
-      >
-        Close
-      </Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+          {/* Footer */}
+          <DialogFooter className="flex justify-center gap-4 p-4">
+            <Button
+              className="border-[#565e64] text-[#565e64] hover:bg-[#565e64] hover:text-white"
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
 
       {/* Delete Modal */}
@@ -293,7 +284,7 @@ export function UserManagement() {
               className="text-white text-xl font-bold"
               onClick={() => setDeleteModalOpen(false)}
             >
-              ×
+
             </button>
           </div>
 

@@ -7,29 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { deleteCookie, setCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-
-import {
-  MoreHorizontal,
-  Play,
-  Trash2,
-  CheckCircle,
-  XCircle,
-} from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { MoreHorizontal, Play, Trash2, CheckCircle, XCircle, } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, } from '@/components/ui/dialog';
 import { communication } from '@/services/communication';
-
+import { FilterBar } from '@/components/common/FilterBar';
 
 export function VideoManagement() {
   const [videos, setVideos] = useState([]);
@@ -42,57 +24,64 @@ export function VideoManagement() {
   const [selectedVideoId, setSelectedVideoId] = useState(null);
   const router = useRouter();
 
-const fetchVideos = async () => {
-  try {
-    setLoading(true);
-    const res = await communication.getVideoListForAdmin(page, searchString);
+  const handlePreview = (id) => {
+    setPlayingVideo(playingVideo === id ? null : id);
+  };
 
-    if (res?.data?.status === 'SUCCESS') {
-      toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
-      setVideos(res.data.videos || []);
-      setTotalPages(res.data.totalPages || 0);
-    } else if (res?.data?.status === 'JWT_INVALID') {
-      toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
-      deleteCookie('auth');
-      deleteCookie('userDetails');
-      setTimeout(() => {
-        router.push('/login');
-      }, 1000);
-    } else {
-      toast.error(res?.data?.message || 'Failed to fetch videos', {
+  const handleSearch = (value) => {
+    setSearchString(value);
+    setPage(1);
+  };
+
+  const fetchVideos = async () => {
+    try {
+      setLoading(true);
+      const res = await communication.getVideoListForAdmin(page, searchString);
+
+      if (res?.data?.status === 'SUCCESS') {
+        toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
+        setVideos(res.data.videos || []);
+        setTotalPages(res.data.totalPages || 0);
+      } else if (res?.data?.status === 'JWT_INVALID') {
+        toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
+        deleteCookie('auth');
+        deleteCookie('userDetails');
+        setTimeout(() => {
+          router.push('/login');
+        }, 1000);
+      } else {
+        toast.error(res?.data?.message || 'Failed to fetch videos', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+        setVideos([]);
+        setTotalPages(0);
+      }
+    } catch (error) {
+      console.error('Error fetching videos:', error.response?.data);
+
+      const apiStatus = error.response?.data?.status;
+      const message = error.response?.data?.message || 'Error fetching videos';
+
+      toast.error(message, {
         position: 'top-right',
         autoClose: 3000,
       });
+
+      if (apiStatus === 'JWT_INVALID') {
+        deleteCookie('auth');
+        deleteCookie('userDetails');
+        setTimeout(() => {
+          router.push('/login');
+        }, 1500);
+      }
+
       setVideos([]);
       setTotalPages(0);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error fetching videos:', error.response?.data);
-
-    const apiStatus = error.response?.data?.status;
-    const message = error.response?.data?.message || 'Error fetching videos';
-
-    toast.error(message, {
-      position: 'top-right',
-      autoClose: 3000,
-    });
-
-    // ✅ Handle JWT Invalid
-    if (apiStatus === 'JWT_INVALID') {
-      deleteCookie('auth');
-      deleteCookie('userDetails');
-      setTimeout(() => {
-        router.push('/login');
-      }, 1500);
-    }
-
-    setVideos([]);
-    setTotalPages(0);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   const getYoutubeEmbedUrl = (url) => {
     try {
@@ -109,17 +98,6 @@ const fetchVideos = async () => {
       return url;
     }
   };
-
-  useEffect(() => {
-    fetchVideos();
-  }, [page, searchString]);
-
-  const handlePreview = (id) => {
-    setPlayingVideo(playingVideo === id ? null : id);
-  };
-
-
-  //  Change Status Handler
 
   const handleChangeStatus = async (videoId) => {
     try {
@@ -141,8 +119,6 @@ const fetchVideos = async () => {
     }
   };
 
-
-
   const handleDeleteConfirm = async () => {
     try {
       if (!selectedVideoId) return;
@@ -161,54 +137,20 @@ const fetchVideos = async () => {
     }
   };
 
+  useEffect(() => {
+    fetchVideos();
+  }, [page, searchString]);
+
   return (
-
-
     <div className="space-y-6">
       <p className="text-lg font-semibold">Video Management</p>
       {/* Search Box */}
-      <div className="flex items-center justify-between gap-2 w-full">
-        {/* Left Side → Search Input */}
-        <input
-          type="text"
-          placeholder="Search videos..."
-          value={searchString}
-          onChange={(e) => setSearchString(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              fetchVideos();
-            }
-          }}
-          className="border p-2 rounded-md w-1/3"
+      <div className="sticky top-0 z-20 bg-white">
+        <FilterBar
+          showSearch
+          searchPlaceholder="Search Video..."
+          onSearchChange={handleSearch}
         />
-
-        {/* Right Side → Pagination */}
-        {totalPages > 0 && (
-          <div className="flex items-center gap-2 text-sm pe-5">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={page === 1}
-              onClick={() => setPage((prev) => prev - 1)}
-            >
-              ‹
-            </Button>
-
-            <span>
-              Page <span className="font-medium">{page}</span> of{" "}
-              <span className="font-medium">{totalPages}</span>
-            </span>
-
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={page === totalPages}
-              onClick={() => setPage((prev) => prev + 1)}
-            >
-              ›
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Loading State */}
@@ -240,29 +182,6 @@ const fetchVideos = async () => {
                   className="w-full h-48 object-cover"
                 />
               )}
-
-              {/* ✅ Status Button on Thumbnail */}
-              {/* <div className="absolute top-2 ps-2">
-                {video.status === "active" ? (
-                  <Button
-                    size="sm"
-                    className="bg-green-600 text-white hover:bg-green-700"
-                    onClick={() => handleChangeStatus(video.id, "inactive")}
-                  >
-                    Disable
-                  </Button>
-                ) : (
-                  <Button 
-                    size="sm"
-                    className="bg-red-600 text-white hover:bg-red-700"
-                    onClick={() => handleChangeStatus(video.id, "active")}
-                  >
-                    Enable
-                  </Button>
-                )}
-              </div> */}
-
-
 
               {/* Status Badge Left Side */}
               <div className="absolute top-2 left-2">
@@ -331,8 +250,6 @@ const fetchVideos = async () => {
                       </DropdownMenuItem>
                     )}
 
-
-
                     {/* Delete with Modal */}
                     <DropdownMenuItem
                       className="text-gray-600"
@@ -365,7 +282,6 @@ const fetchVideos = async () => {
               className="text-white text-xl font-bold"
               onClick={() => setDeleteModalOpen(false)}
             >
-              ×
             </button>
           </div>
 

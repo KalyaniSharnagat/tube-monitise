@@ -22,34 +22,30 @@ export function CoinManagement() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [coinToDelete, setCoinToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [timeoutId, setTimeoutId] = useState();
-  const [searchString, setSearchString] = useState("");
   const itemsPerPage = 10;
   const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
 
+  const openCreateModal = () => {
+    setNewCoin({ id: '', coins: '', price: '' });
+    setIsEditing(false);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (pkg) => {
+    setNewCoin({ id: pkg.id, coins: pkg.coins, price: pkg.amount });
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
+
+  const handleSearch = (value) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
 
   const openDeleteModal = (pkgId) => {
     setCoinToDelete(pkgId);
     setDeleteModalOpen(true);
-  };
-
-  const confirmDeleteCoin = async () => {
-    try {
-      const res = await communication.deleteCoinSlot([coinToDelete]);
-      if (res?.data?.status === "SUCCESS") {
-        toast.success("Coin package deleted successfully!", { position: "top-right", autoClose: 3000 });
-        fetchCoins();
-      } else {
-        toast.warning(res.data.message || "Failed to delete coin package", { position: "top-right", autoClose: 3000 });
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong while deleting coin package.", { position: "top-right", autoClose: 3000 });
-    } finally {
-      setDeleteModalOpen(false);
-      setCoinToDelete(null);
-    }
   };
 
   const fetchCoins = async () => {
@@ -81,10 +77,6 @@ export function CoinManagement() {
       setLoading(false);
     }
   };
-
-
-
-
 
   const handleSaveCoin = async () => {
     try {
@@ -122,24 +114,25 @@ export function CoinManagement() {
     }
   };
 
-  const openCreateModal = () => {
-    setNewCoin({ id: '', coins: '', price: '' });
-    setIsEditing(false);
-    setIsModalOpen(true);
+  const confirmDeleteCoin = async () => {
+    try {
+      const res = await communication.deleteCoinSlot([coinToDelete]);
+      if (res?.data?.status === "SUCCESS") {
+        toast.success("Coin package deleted successfully!", { position: "top-right", autoClose: 3000 });
+        fetchCoins();
+      } else {
+        toast.warning(res.data.message || "Failed to delete coin package", { position: "top-right", autoClose: 3000 });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while deleting coin package.", { position: "top-right", autoClose: 3000 });
+    } finally {
+      setDeleteModalOpen(false);
+      setCoinToDelete(null);
+    }
   };
 
-  const openEditModal = (pkg) => {
-    setNewCoin({ id: pkg.id, coins: pkg.coins, price: pkg.amount });
-    setIsEditing(true);
-    setIsModalOpen(true);
-  };
-
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-    setCurrentPage(1); // Reset to first page
-  };
-
-    useEffect(() => {
+  useEffect(() => {
     fetchCoins();
   }, []);
 
@@ -269,7 +262,7 @@ export function CoinManagement() {
         <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
           <div className="text-white flex justify-between items-center px-4 py-2" style={{ backgroundColor: '#2ea984' }}>
             <h3 className="font-semibold text-lg">Delete Confirmation</h3>
-            <button className="text-white text-xl font-bold" onClick={() => setDeleteModalOpen(false)}>×</button>
+            <button className="text-white text-xl font-bold" onClick={() => setDeleteModalOpen(false)}></button>
           </div>
           <div className="p-4 text-center">
             <p className="text-gray-700">Are you sure you want to delete this coin?</p>

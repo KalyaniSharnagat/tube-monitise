@@ -24,8 +24,8 @@ export function FilterBar({
   moreFilters = null,
   currentPage = 1,
   totalPages = 1,
-  onPageChange = () => {},
-  onSearchChange = () => {},
+  onPageChange = () => { },
+  onSearchChange = () => { },
 }) {
   return (
     <div className="sticky top-0 z-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-gray-900/60 border-b border-border">
