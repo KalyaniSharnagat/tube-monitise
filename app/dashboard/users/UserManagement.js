@@ -15,9 +15,11 @@ export function UserManagement() {
   const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [timeoutId, setTimeoutId] = useState();
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchString, setSearchString] = useState("");
   const itemsPerPage = 5;
   const router = useRouter();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -33,39 +35,33 @@ export function UserManagement() {
     setIsModalOpen(true);
   };
 
-  const filteredData = useMemo(() => {
-    return users.filter(user =>
-      user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [users, searchQuery]);
+  const handleSearch = (eOrValue) => {
+    const value = typeof eOrValue === "string" ? eOrValue : eOrValue?.target?.value || "";
+    setCurrentPage(1);
+    setSearchString(value);
+    clearTimeout(timeoutId);
+    let _timeOutId = setTimeout(() => {
+      fetchUsers("1", value);
+    }, 2000);
+    setTimeoutId(_timeOutId);
+  };
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredData.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredData, currentPage, itemsPerPage]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = async (page, searchString) => {
     try {
-      const res = await communication.getUserList({ page: 1, searchString: "" });
+      const res = await communication.getUserList(page, searchString?.trim());
 
       if (res?.data?.status === 'SUCCESS') {
         toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
-
-        const usersWithStatus = (res.data.users || []).map(user => ({
-          ...user,
-          status: user.status || "Active"
-        }));
-        setUsers(usersWithStatus);
+        setUsers(res.data.users);
       } else if ('JWT_INVALID' === res.data.status) {
         toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
         deleteCookie('auth');
-        deleteCookie('userDetails');
         setTimeout(() => {
           router.push('/login');
         }, 1000);
       } else {
+        setUsers([]);
+        setTotalPages(1);
         toast.error(res.data.message, {
           position: 'top-right',
           autoClose: 3000,
@@ -75,6 +71,7 @@ export function UserManagement() {
     } catch (err) {
       console.error('Error fetching users:', err.response?.data);
       setUsers([]);
+      setTotalPages(1);
     }
     finally {
       setLoading(false);
@@ -128,7 +125,7 @@ export function UserManagement() {
 
   useEffect(() => {
     fetchUsers();
-  }, [currentPage]);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -140,10 +137,7 @@ export function UserManagement() {
           <FilterBar
             showSearch
             searchPlaceholder="Search users..."
-            onSearchChange={(val) => { setSearchQuery(val); setCurrentPage(1); }}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={(page) => setCurrentPage(page)}
+            onSearchChange={handleSearch}
           />
           <div className="w-full border rounded">
             {/* Only table area scrolls */}
@@ -163,7 +157,7 @@ export function UserManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedData.length > 0 ? paginatedData.map((user, index) => (
+                  {users.length > 0 ? users.map((user, index) => (
                     <tr key={user.userIds} className="border-b">
                       <td className="p-4 whitespace-normal break-all">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                       <td className="p-4 whitespace-normal break-all">{user.name}</td>

@@ -95,32 +95,29 @@ function initAxiosLoaderInterceptor() {
   });
 }
 
-// Initialize on module load in the browser
 if (typeof window !== "undefined") {
   initAxiosLoaderInterceptor();
 }
 
-// Export communication object with APIs
 export const communication = {
-    //   create  for given admin Information
-    getAdminById: async (adminId) => {
-  try {
-    return await axios.post(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/admin/get-admin-by-id`,
-      { id: adminId },  
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getCookie("auth")}`,
-        },
-      }
-    );
-  } catch (error) {
-    toast.error(error.message);
-    throw error;
-  }
-},
-  
+  getAdminById: async (adminId) => {
+    try {
+      return await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/admin/get-admin-by-id`,
+        { id: adminId },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("auth")}`,
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  },
+
   // Create User
   createUser: async (userData) => {
     try {
@@ -142,7 +139,7 @@ export const communication = {
   },
 
   // Get User List
-  getUserList: async ({ page, searchString = "" } = {}) => {
+  getUserList: async (page = 1, searchString = "") => {
     try {
       const requestBody = { page, searchString };
 
@@ -163,7 +160,7 @@ export const communication = {
       throw error;
     }
   },
-//   delete User
+  //   delete User
   deleteSelectedUser: async (userIds) => {
     try {
       const response = await axios.post(
@@ -317,7 +314,7 @@ export const communication = {
     }
   },
   // Get Coin Slot List
-  getCoinSlotList: async ({ page, searchString }) => {
+  getCoinSlotList: async (page = 1, searchString) => {
     try {
       const requestBody = { page, searchString };
 
@@ -401,7 +398,7 @@ export const communication = {
       throw error;
     }
   },
-// get Notification Count
+  // get Notification Count
   getNotificationCount: async () => {
     try {
       return await axios.get(
@@ -464,7 +461,7 @@ export const communication = {
   },
 
   // Get Video List
-  getVideoListForAdmin: async (page = 1, searchString = "") => {
+  getVideoListForAdmin: async (page = 1, searchString) => {
     try {
       const requestBody = { page, searchString };
 
@@ -474,7 +471,7 @@ export const communication = {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("auth")}`, // same as login
+            Authorization: `Bearer ${getCookie("auth")}`,
           },
         }
       );

@@ -38,12 +38,10 @@ export function ContactManagement() {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [expandedMessage, setExpandedMessage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
   const [timeoutId, setTimeoutId] = useState();
-  const [searchString, setSearchString] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchString, setSearchString] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const handleEdit = (contact) => {
     setSelectedContact({ ...contact, queryId: contact.id });
@@ -53,20 +51,21 @@ export function ContactManagement() {
     setSelectedContact(contact);
     setOpenDeleteModal(true);
   };
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-    setCurrentPage(1);
+
+  const handleSearch = (eOrValue) => {
+    const value = typeof eOrValue === "string" ? eOrValue : eOrValue?.target?.value || "";
+    setSearchString(value);
     clearTimeout(timeoutId);
-    const _timeoutId = setTimeout(() => {
-      fetchContacts(value, 1);
-    }, 2000); 
-    setTimeoutId(_timeoutId);
+    let _timeOutId = setTimeout(() => {
+      fetchContacts("1", value);
+    }, 2000);
+    setTimeoutId(_timeOutId);
   };
-   const fetchContacts = async (query = searchQuery, page = currentPage) => {
+
+  const fetchContacts = async (page, searchString) => {
     try {
       setLoading(true);
-      const res = await communication.getQueryList(page, query);
-
+      const res = await communication.getQueryList(page, searchString?.trim());
       if (res?.data?.status === "SUCCESS") {
         toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
         setContacts(res.data.contacts);
@@ -74,11 +73,12 @@ export function ContactManagement() {
       } else if ('JWT_INVALID' === res.data.status) {
         toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
         deleteCookie('auth');
-        deleteCookie('userDetails');
         setTimeout(() => {
           router.push('/login');
         }, 1000);
       } else {
+        setContacts([]);
+        setTotalPages(1);
         toast.warning(res.data.message, {
           position: 'top-right',
           autoClose: 3000,
@@ -87,6 +87,7 @@ export function ContactManagement() {
     } catch (err) {
       console.error("Error fetching contacts:", err.response?.data);
       setContacts([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
@@ -101,7 +102,7 @@ export function ContactManagement() {
         remarks: selectedContact.remarks,
         subject: selectedContact.subject
       });
-     if (res?.data?.status === "SUCCESS") {
+      if (res?.data?.status === "SUCCESS") {
         toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
         setContacts((prev) =>
           prev.map((c) =>
@@ -118,7 +119,7 @@ export function ContactManagement() {
       setLoading(false);
     }
   };
-    const confirmDelete = async () => {
+  const confirmDelete = async () => {
     try {
       setLoading(true);
       const res = await communication.deleteQuery({ queryIds: [selectedContact.id] });
@@ -134,13 +135,10 @@ export function ContactManagement() {
       setLoading(false);
     }
   };
-useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchContacts(searchQuery, currentPage);
-    }, 500);
 
-    return () => clearTimeout(timer); 
-  }, [searchQuery, currentPage]);
+  useEffect(() => {
+    fetchContacts();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -236,7 +234,7 @@ useEffect(() => {
                 ) : (
                   <tr>
                     <td colSpan={8} className="text-center text-gray-500 py-4">
-                      No contacts found.
+                      No queries found.
                     </td>
                   </tr>
                 )}
