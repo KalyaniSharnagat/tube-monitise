@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FilterBar } from '@/components/common/FilterBar';
-import { setCookie } from 'cookies-next';
+import { deleteCookie, removeCookies, setCookie } from 'cookies-next';
 
 export function CoinManagement() {
   const [coinPackages, setCoinPackages] = useState([]);
@@ -22,9 +22,11 @@ export function CoinManagement() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [coinToDelete, setCoinToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [timeoutId, setTimeoutId] = useState();
+  const [searchString, setSearchString] = useState("");
   const itemsPerPage = 10;
   const [totalPages, setTotalPages] = useState(1);
-  const router = useRouter(); 
+  const router = useRouter();
 
 
   const openDeleteModal = (pkgId) => {
@@ -51,51 +53,43 @@ export function CoinManagement() {
   };
 
   const fetchCoins = async () => {
-  try {
-    setLoading(true);
-    const res = await communication.getCoinSlotList({
-      page: currentPage,
-      searchString: searchQuery,
-    });
 
-    if (res?.data?.status === 'SUCCESS') {
-      setCoinPackages(res.data.slots || []);
-      setTotalPages(res.data.totalPages || 1);
-    } else {
-      toast.warning(res.data.message || 'Failed to fetch coin packages', {
-        position: 'top-right',
-        autoClose: 3000,
+    try {
+      setLoading(true);
+      const res = await communication.getCoinSlotList({
+        page: currentPage,
+        searchString: searchQuery,
       });
+
+      if (res?.data?.status === 'SUCCESS') {
+        toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
+        setCoinPackages(res.data.slots || []);
+        setTotalPages(res.data.totalPages || 1);
+      } else if ('JWT_INVALID' === res.data.status) {
+        toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
+        deleteCookie('auth');
+        deleteCookie('userDetails');
+        setTimeout(() => {
+          router.push('/login');
+        }, 1000);
+      } else {
+        toast.warning(res.data.message, {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Error Response:", error.response?.data);
+
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error Response:", error.response?.data);
-
-    const apiStatus = error.response?.data?.status;
-    const message = error.response?.data?.message || 'Error fetching coin packages';
-
-    toast.error(message, {
-      position: 'top-right',
-      autoClose: 3000,
-    });
-
-    if (apiStatus === 'JWT_INVALID') {
-      setCookie(null, 'auth', '', { maxAge: -1, path: '/' });
-      setCookie(null, 'userDetails', '', { maxAge: -1, path: '/' });
-
-      setTimeout(() => {
-        router.push('/login'); 
-      }, 1500);
-    }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   useEffect(() => {
     fetchCoins();
-  }, [currentPage, searchQuery]);
-
+  }, []);
 
 
   const handleSaveCoin = async () => {
@@ -146,6 +140,19 @@ export function CoinManagement() {
     setIsModalOpen(true);
   };
 
+  const handleSearch = (value) => {
+    setSearchQuery(value);
+    setCurrentPage(1); // Reset to first page
+
+    clearTimeout(timeoutId);
+    const _timeoutId = setTimeout(() => {
+      fetchCoins();
+    }, 2000); // Debounce time
+    setTimeoutId(_timeoutId);
+  };
+
+
+
   return (
     <div className="space-y-6">
       <Card>
@@ -169,15 +176,8 @@ export function CoinManagement() {
             <FilterBar
               showSearch
               searchPlaceholder="Search coins or amount..."
-              onSearchChange={(val) => {
-                setSearchQuery(val);
-                setCurrentPage(1); // Reset to first page
-              }}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={(page) => setCurrentPage(page)}
+              onSearchChange={handleSearch}
             />
-
           </div>
 
 
@@ -196,10 +196,11 @@ export function CoinManagement() {
                     {/* Delete Button */}
                     <button
                       onClick={() => openDeleteModal(pkg.id)}
-                      className="absolute top-2 right-2 text-red-500 hover:text-red-600"
+                      className="absolute top-2 right-2 flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-600 hover:text-white"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
+
 
                     <CardContent className="p-4 md:p-5 text-center">
                       <div className="w-12 h-12 md:w-14 md:h-14 mx-auto mb-3 bg-yellow-100 rounded-full flex items-center justify-center">
@@ -208,7 +209,7 @@ export function CoinManagement() {
                       <p className="text-2xl md:text-3xl font-bold text-yellow-600 mb-1">{pkg.coins}</p>
                       <p className="text-xs md:text-sm text-muted-foreground mb-2">coins</p>
                       <p className="text-xl md:text-2xl font-bold mb-3" style={{ color: '#2ea984' }}>
-                        ${pkg.amount}
+                        ₹{pkg.amount}
                       </p>
 
                       <Button
@@ -246,7 +247,7 @@ export function CoinManagement() {
               className="mb-3 no-spinner"
             />
             <Input
-              placeholder="Amount ($)"
+              placeholder="Amount (₹)"
               type="number"
               value={newCoin.price}
               onChange={(e) => setNewCoin({ ...newCoin, price: parseFloat(e.target.value) })}
