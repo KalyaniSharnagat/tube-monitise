@@ -53,7 +53,7 @@ export function Header({ activeSection, onToggleSidebar, isCollapsed }) {
     const adminData = JSON.parse((getCookie('userDetails')))
     console.log("userDetails", adminData.id);
 
-    
+
     try {
       const res = await communication.getAdminById(adminData.id);
       console.log("Profile API response:", res);

@@ -205,7 +205,15 @@ export function ContactManagement() {
             {contacts.map((contact, index) => (
               <tr key={contact.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
                 <td className="p-3 text-sm">{index + 1}</td>
-                <td className="p-3 text-sm">{contact.name}</td>
+               <td className="p-3 text-sm ">
+                        {contact.name
+                          ? contact.name
+                            .toLowerCase()
+                            .split(" ")
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(" ")
+                          : ""}
+                      </td>
                 <td className="p-3 text-sm">{contact.email}</td>
                 <td className="p-3 text-sm">{contact.subject}</td>
                 <td className="p-3 text-sm max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
@@ -213,7 +221,7 @@ export function ContactManagement() {
                     <>
                       <p className="whitespace-pre-wrap break-words">{contact.message}</p>
                       <button
-                        className="text-blue-600 font-medium mt-1 hover:underline"
+                        className=" font-medium mt-1 hover:underline"
                         onClick={() => setExpandedMessage(null)}
                       >
                         Show Less
@@ -224,12 +232,12 @@ export function ContactManagement() {
                       <p className="line-clamp-2 whitespace-pre-wrap break-words">
                         {contact.message}
                       </p>
-                      {contact.message.length > 80 && (
+                      {contact.message.length > 20 && (
                         <button
-                          className="text-blue-600 font-medium mt-1 hover:underline"
+                          className=" font-medium mt-1 hover:underline"
                           onClick={() => setExpandedMessage(contact.id)}
                         >
-                          Read More
+                          ......
                         </button>
                       )}
                     </>
@@ -268,7 +276,7 @@ export function ContactManagement() {
   </Card>
 
 
-      {/* Edit Modal */}
+     
       {/* Edit Modal */}
       <Dialog open={openEditModal} onOpenChange={setOpenEditModal}>
   <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
