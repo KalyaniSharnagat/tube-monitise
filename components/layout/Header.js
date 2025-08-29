@@ -20,10 +20,8 @@ import { Bell, LogOut, User } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
+import { getCookie } from "cookies-next";
 
 export function Header({ activeSection, onToggleSidebar, isCollapsed }) {
   const router = useRouter();
@@ -31,13 +29,10 @@ export function Header({ activeSection, onToggleSidebar, isCollapsed }) {
   const [notificationCount, setNotificationCount] = useState(0);
   const [socket, setSocket] = useState(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
-  const [userDetails] = useState({
-    name: "Admin User",
-    email: "admin@tubemonities.com",
-    role: " Admin",
-    createdAt: "2024-08-15T10:30:00Z"
-  });
+  const [userDetails, setUserDetails] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
+  // Fetch notification count
   const fetchNotificationCount = async () => {
     try {
       const res = await communication.getNotificationCount();
@@ -52,11 +47,35 @@ export function Header({ activeSection, onToggleSidebar, isCollapsed }) {
     }
   };
 
+  // Fetch profile details
+  const fetchUserProfile = async () => {
+    setLoadingProfile(true);
+    const adminData = JSON.parse((getCookie('userDetails')))
+    console.log("userDetails", adminData.id);
+
+    
+    try {
+      const res = await communication.getAdminById(adminData.id);
+      console.log("Profile API response:", res);
+      if (res?.data?.status === "SUCCESS") {
+        setUserDetails(res.data.admin);
+      } else {
+        setUserDetails(null);
+        console.error("API returned failure:", res?.data?.message);
+      }
+    } catch (err) {
+      console.error("API error:", err);
+      setUserDetails(null);
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
+  // Socket connection
   useEffect(() => {
     const socketConnection = io(process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000", {
       transports: ["websocket"],
     });
-
     setSocket(socketConnection);
 
     return () => {
@@ -76,9 +95,17 @@ export function Header({ activeSection, onToggleSidebar, isCollapsed }) {
     fetchNotificationCount();
   }, []);
 
+  // Fetch profile when modal opens
+  useEffect(() => {
+    console.log("Profile modal open state changed:", profileModalOpen);
+    if (profileModalOpen) {
+      fetchUserProfile();
+    }
+  }, [profileModalOpen]);
+
   return (
     <>
-      {/* 🔹 Header */}
+      {/* Header */}
       <header className="h-10 md:h-12 sticky top-0 z-30 bg-white dark:bg-gray-800 border-b border-border shadow-sm">
         <div className="flex items-center justify-between gap-2 h-full px-3 md:px-6">
           <div className="flex items-center gap-2">
@@ -128,18 +155,18 @@ export function Header({ activeSection, onToggleSidebar, isCollapsed }) {
 
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <LogOut className="mr-2 h-4 w-4" />               
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        document.cookie = 'auth=; Path=/; Max-Age=0; SameSite=Lax';
-                        router.push('/login');
-                      }}
-                    >
-                      <Button type="submit" variant="ghost" className={`w-4 h-4 ml-2 ${isCollapsed ? 'px-2' : ''}`}>
-                        {!isCollapsed && 'Log out'}
-                      </Button>
-                    </form>               
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      document.cookie = 'auth=; Path=/; Max-Age=0; SameSite=Lax';
+                      router.push('/login');
+                    }}
+                  >
+                    <Button type="submit" variant="ghost" className={`w-4 h-4 ml-2 ${isCollapsed ? 'px-2' : ''}`}>
+                      {!isCollapsed && 'Log out'}
+                    </Button>
+                  </form>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -147,119 +174,99 @@ export function Header({ activeSection, onToggleSidebar, isCollapsed }) {
         </div>
       </header>
 
+      {/* 🔹 Profile Modal */}
+      <Dialog open={profileModalOpen} onOpenChange={setProfileModalOpen}>
+        <DialogContent className="max-w-md rounded-2xl shadow-xl border border-gray-200 p-0 overflow-hidden">
+          {/* Top banner */}
+          <div className="relative h-28 bg-gradient-to-r from-[rgb(49,186,140)] via-[rgb(49,186,140)] to-[rgb(233,77,89)]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(255,255,255,0.25),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(255,255,255,0.15),transparent_40%)]" />
+            <button
+              onClick={() => setProfileModalOpen(false)}
+              className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
+              aria-label="Close"
+            >
+              ✕
+            </button>
 
-     {/* 🔹 Profile Modal */}
-<Dialog open={profileModalOpen} onOpenChange={setProfileModalOpen}>
-  <DialogContent className="max-w-md rounded-2xl shadow-xl border border-gray-200 p-0 overflow-hidden">
-    {/* Top banner */}
-    <div className="relative h-28 bg-gradient-to-r from-[rgb(49,186,140)] via-[rgb(49,186,140)] to-[rgb(233,77,89)]">
-      {/* gloss overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(255,255,255,0.25),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(255,255,255,0.15),transparent_40%)]" />
-      {/* close */}
-      <button
-        onClick={() => setProfileModalOpen(false)}
-        className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
-        aria-label="Close"
-      >
-        ✕
-      </button>
-
-      {/* Admin flair */}
-      {String(userDetails?.role || '').toLowerCase() === 'admin' && (
-        <div className="absolute left-0 top-0 rounded-br-2xl bg-[rgb(233,77,89)]/90 px-3 py-1 text-xs font-semibold text-white">
-          ADMIN
-        </div>
-      )}
-    </div>
-
-    {/* Card body */}
-    <div className="-mt-10 px-6 pb-6">
-      {/* Avatar */}
-      <div className="flex justify-center">
-        <div className="rounded-full ring-4 ring-white shadow-lg">
-          <div className="relative h-20 w-20 overflow-hidden rounded-full bg-white">
-            {userDetails?.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={userDetails.avatarUrl}
-                alt={userDetails.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-lg font-semibold text-[rgb(49,186,140)] bg-[rgb(49,186,140)]/10">
-                {(userDetails?.name || 'U')
-                  .split(' ')
-                  .map((s) => s[0])
-                  .join('')
-                  .slice(0, 2)
-                  .toUpperCase()}
+            {String(userDetails?.role || '').toLowerCase() === 'admin' && (
+              <div className="absolute left-0 top-0 rounded-br-2xl bg-[rgb(233,77,89)]/90 px-3 py-1 text-xs font-semibold text-white">
+                ADMIN
               </div>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Name + email */}
-      <div className="mt-4 text-center">
-        <h3 className="text-lg font-semibold text-gray-900">{userDetails?.name}</h3>
-        <div className="mt-1 inline-flex items-center gap-2">
-          <span className="text-xs text-gray-500">{userDetails?.email}</span>
-        </div>
+          <div className="-mt-10 px-6 pb-6">
+            <div className="flex justify-center">
+              <div className="rounded-full ring-4 ring-white shadow-lg">
+                <div className="relative h-20 w-20 overflow-hidden rounded-full bg-white">
+                  {loadingProfile ? (
+                    <div className="flex h-full w-full items-center justify-center text-gray-400 text-sm">
+                      Loading...
+                    </div>
+                  ) : userDetails?.avatarUrl ? (
+                    <img
+                      src={userDetails.avatarUrl}
+                      alt={userDetails.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-lg font-semibold text-[rgb(49,186,140)] bg-[rgb(49,186,140)]/10">
+                      {(userDetails?.name || 'U')
+                        .split(' ')
+                        .map((s) => s[0])
+                        .join('')
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
 
-        {/* Role */}
-        <div className="mt-3 flex items-center justify-center">
-          <span
-            className={[
-              'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium capitalize',
-              String(userDetails?.role || '').toLowerCase() === 'admin'
-                ? 'bg-[rgb(233,77,89)]/10 text-[rgb(233,77,89)] ring-1 ring-[rgb(233,77,89)]/30'
-                : 'bg-[rgb(49,186,140)]/10 text-[rgb(49,186,140)] ring-1 ring-[rgb(49,186,140)]/30',
-            ].join(' ')}
-          >
-            {userDetails?.role}
-          </span>
-        </div>
-      </div>
+            <div className="mt-4 text-center">
+              <h3 className="text-lg font-semibold text-gray-900">{userDetails?.name || '-'}</h3>
+              <div className="mt-1 inline-flex items-center gap-2">
+                <span className="text-xs text-gray-500">{userDetails?.email || '-'}</span>
+              </div>
 
-      {/* Details */}
-      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="rounded-xl border border-gray-200 p-3">
-          <p className="text-xs text-gray-500">Name</p>
-          <p className="truncate text-sm font-medium text-gray-900">{userDetails?.name}</p>
-        </div>
-        <div className="rounded-xl border border-gray-200 p-3">
-          <p className="text-xs text-gray-500">Email</p>
-          <p className="truncate text-sm font-medium text-gray-900">{userDetails?.email}</p>
-        </div>
-        <div className="rounded-xl border border-gray-200 p-3">
-          <p className="text-xs text-gray-500">Role</p>
-          <p className="truncate text-sm font-medium text-gray-900 capitalize">{userDetails?.role}</p>
-        </div>
-        <div className="rounded-xl border border-gray-200 p-3">
-          <p className="text-xs text-gray-500">Created At</p>
-          <p className="text-sm font-medium text-gray-900">
-            {userDetails?.createdAt
-              ? new Date(userDetails.createdAt).toLocaleDateString()
-              : '-'}
-          </p>
-        </div>
-      </div>
+              <div className="mt-3 flex items-center justify-center">
+                <span
+                  className={[
+                    'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium capitalize',
+                    String(userDetails?.role || '').toLowerCase() === 'admin'
+                      ? 'bg-[rgb(233,77,89)]/10 text-[rgb(233,77,89)] ring-1 ring-[rgb(233,77,89)]/30'
+                      : 'bg-[rgb(49,186,140)]/10 text-[rgb(49,186,140)] ring-1 ring-[rgb(49,186,140)]/30',
+                  ].join(' ')}
+                >
+                  {userDetails?.role || '-'}
+                </span>
+              </div>
 
-      {/* Footer */}
-      {/* <div className="mt-6 flex justify-end">
-        <Button
-          className="bg-[rgb(49,186,140)] hover:bg-[rgb(49,186,140)]/90 text-white"
-          onClick={() => setProfileModalOpen(false)}
-        >
-          Close
-        </Button>
-      </div> */}
-    </div>
-  </DialogContent>
-</Dialog>
+            </div>
 
-
-
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-gray-200 p-3">
+                <p className="text-xs text-gray-500">Name</p>
+                <p className="truncate text-sm font-medium text-gray-900">{userDetails?.name || '-'}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 p-3">
+                <p className="text-xs text-gray-500">Email</p>
+                <p className="truncate text-sm font-medium text-gray-900">{userDetails?.email || '-'}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 p-3">
+                <p className="text-xs text-gray-500">Role</p>
+                <p className="truncate text-sm font-medium text-gray-900 capitalize">{userDetails?.role || '-'}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 p-3">
+                <p className="text-xs text-gray-500">Created At</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {userDetails?.createdAt ? new Date(userDetails.createdAt).toLocaleDateString() : '-'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
