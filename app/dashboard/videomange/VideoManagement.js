@@ -22,6 +22,7 @@ export function VideoManagement() {
   const [searchString, setSearchString] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState(null);
+  const [timeoutId, setTimeoutId] = useState();
   const router = useRouter();
 
   const handlePreview = (id) => {
@@ -29,11 +30,16 @@ export function VideoManagement() {
   };
 
   const handleSearch = (value) => {
-    setSearchString(value);
-    setPage(1);
+    setSearchQuery(value);
+    setCurrentPage(1);
+    clearTimeout(timeoutId);
+    const _timeoutId = setTimeout(() => {
+      fetchVideos(value, 1);
+    }, 2000); // debounce
+    setTimeoutId(_timeoutId);
   };
 
-  const fetchVideos = async () => {
+  const fetchVideos = async (query = searchQuery, page = currentPage) => {
     try {
       setLoading(true);
       const res = await communication.getVideoListForAdmin(page, searchString);

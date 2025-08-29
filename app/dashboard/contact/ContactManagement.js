@@ -39,9 +39,14 @@ export function ContactManagement() {
   const [expandedMessage, setExpandedMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [searchString, setSearchString] = useState('');
+  const [timeoutId, setTimeoutId] = useState();
+  const [searchString, setSearchString] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+
+
 
   const handleEdit = (contact) => {
     setSelectedContact({ ...contact, queryId: contact.id });
@@ -54,14 +59,19 @@ export function ContactManagement() {
   };
 
   const handleSearch = (value) => {
-    setSearchString(value);
-    setPage(1);
+    setSearchQuery(value);
+    setCurrentPage(1);
+    clearTimeout(timeoutId);
+    const _timeoutId = setTimeout(() => {
+      fetchContacts(value, 1);
+    }, 2000); // debounce
+    setTimeoutId(_timeoutId);
   };
 
-  const fetchContacts = async () => {
+  const fetchContacts = async (query = searchQuery, page = currentPage) => {
     try {
       setLoading(true);
-      const res = await communication.getQueryList(page, searchString);
+      const res = await communication.getQueryList(page, query);
 
       if (res?.data?.status === "SUCCESS") {
         toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
@@ -134,8 +144,13 @@ export function ContactManagement() {
   };
 
   useEffect(() => {
-    fetchContacts();
-  }, [page, searchString]);
+  const timer = setTimeout(() => {
+    fetchContacts(searchQuery, currentPage);
+  }, 500);
+
+  return () => clearTimeout(timer); // cleanup
+}, [searchQuery, currentPage]);
+
 
   return (
     <div className="space-y-6">
@@ -143,7 +158,7 @@ export function ContactManagement() {
 
       <Card>
         <CardContent className="p-6 space-y-4">
-
+          <p className="text-lg font-semibold">Query Management</p>
           <div className="sticky top-0 z-20 bg-white">
             <FilterBar
               showSearch
@@ -168,74 +183,79 @@ export function ContactManagement() {
                 </tr>
               </thead>
               <tbody>
-                {contacts.map((contact, index) => (
-                  <tr key={contact.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="p-3 text-sm">{index + 1}</td>
-                    <td className="p-3 text-sm ">
-                      {contact.name
-                        ? contact.name
-                          .toLowerCase()
-                          .split(" ")
-                          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                          .join(" ")
-                        : ""}
-                    </td>
-                    <td className="p-3 text-sm">{contact.email}</td>
-                    <td className="p-3 text-sm">{contact.subject}</td>
-                    <td className="p-3 text-sm max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
-                      {expandedMessage === contact.id ? (
-                        <>
-                          <p className="whitespace-pre-wrap break-words">{contact.message}</p>
-                          <button
-                            className=" font-medium mt-1 hover:underline"
-                            onClick={() => setExpandedMessage(null)}
-                          >
-                            Show Less
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <p className="line-clamp-2 whitespace-pre-wrap break-words">
-                            {contact.message}
-                          </p>
-                          {contact.message.length > 20 && (
+                {contacts.length > 0 ? (
+                  contacts.map((contact, index) => (
+                    <tr key={contact.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="p-3 text-sm">{index + 1}</td>
+                      <td className="p-3 text-sm">
+                        {contact.name
+                          ? contact.name
+                            .toLowerCase()
+                            .split(" ")
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(" ")
+                          : ""}
+                      </td>
+                      <td className="p-3 text-sm">{contact.email}</td>
+                      <td className="p-3 text-sm">{contact.subject}</td>
+                      <td className="p-3 text-sm max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
+                        {expandedMessage === contact.id ? (
+                          <>
+                            <p className="whitespace-pre-wrap break-words">{contact.message}</p>
                             <button
-                              className=" font-medium mt-1 hover:underline"
-                              onClick={() => setExpandedMessage(contact.id)}
+                              className="font-medium mt-1 hover:underline"
+                              onClick={() => setExpandedMessage(null)}
                             >
-                              ......
+                              Show Less
                             </button>
-                          )}
-                        </>
-                      )}
-                    </td>
-                    <td className="p-3 text-sm">
-                      <Badge
-                        className={
-                          contact.status === "Pending"
-                            ? "bg-red-100 text-red-800"
-                            : contact.status === "Resolved"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
-                        }
-                      >
-                        {contact.status}
-                      </Badge>
-                    </td>
-                    <td className="p-3 text-sm">
-                      {new Date(contact.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="p-3 text-center flex items-center justify-center space-x-2">
-                      <Button size="sm" variant="ghost" onClick={() => handleEdit(contact)}>
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => handleDelete(contact)}>
-                        <Trash2 className="w-4 h-4 text-red-500 hover:text-white" />
-                      </Button>
+                          </>
+                        ) : (
+                          <>
+                            <p className="line-clamp-2 whitespace-pre-wrap break-words">{contact.message}</p>
+                            {contact.message.length > 20 && (
+                              <button
+                                className="font-medium mt-1 hover:underline"
+                                onClick={() => setExpandedMessage(contact.id)}
+                              >
+                                ......
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </td>
+                      <td className="p-3 text-sm">
+                        <Badge
+                          className={
+                            contact.status === "Pending"
+                              ? "bg-red-100 text-red-800"
+                              : contact.status === "Resolved"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                          }
+                        >
+                          {contact.status}
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-sm">{new Date(contact.createdAt).toLocaleDateString()}</td>
+                      <td className="p-3 text-center flex items-center justify-center space-x-2">
+                        <Button size="sm" variant="ghost" onClick={() => handleEdit(contact)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleDelete(contact)}>
+                          <Trash2 className="w-4 h-4 text-red-500 hover:text-white" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="text-center text-gray-500 py-4">
+                      No contacts found.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
+
             </table>
           </div>
         </CardContent>
