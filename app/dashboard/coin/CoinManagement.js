@@ -21,6 +21,8 @@ export function CoinManagement() {
   const [loading, setLoading] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [coinToDelete, setCoinToDelete] = useState(null);
+  const [timeoutId, setTimeoutId] = useState();
+  const [searchString, setSearchString] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [totalPages, setTotalPages] = useState(1);
@@ -41,6 +43,11 @@ export function CoinManagement() {
   const handleSearch = (value) => {
     setSearchQuery(value);
     setCurrentPage(1);
+    clearTimeout(timeoutId);
+    const _timeoutId = setTimeout(() => {
+      fetchCoins(value, 1);
+    }, 2000);
+    setTimeoutId(_timeoutId);
   };
 
   const openDeleteModal = (pkgId) => {
@@ -55,8 +62,6 @@ export function CoinManagement() {
 
       if (res?.data?.status === 'SUCCESS') {
         let slots = res.data.slots || [];
-
-        // frontend filter
         if (query) {
           slots = slots.filter(slot =>
             String(slot.amount).includes(query) ||

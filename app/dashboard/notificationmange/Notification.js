@@ -28,6 +28,7 @@ export function Notification() {
   const [totalPages, setTotalPages] = useState(0);
   const [selectedIds, setSelectedIds] = useState([]);
   const [bulkDeleteType, setBulkDeleteType] = useState(null);
+  const [timeoutId, setTimeoutId] = useState();
   const router = useRouter();
 
   const toggleSelect = (id) => {
@@ -56,11 +57,16 @@ export function Notification() {
   };
 
   const handleSearch = (value) => {
-    setSearchString(value);
-    setPage(1);
+    setSearchQuery(value);
+    setCurrentPage(1);
+    clearTimeout(timeoutId);
+    const _timeoutId = setTimeout(() => {
+      fetchNotifications(value, 1);
+    }, 2000); // debounce
+    setTimeoutId(_timeoutId);
   };
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (query = searchQuery, page = currentPage) => {
     try {
       setLoading(true);
       const res = await communication.getAllNotification(page, searchString);
