@@ -45,30 +45,24 @@ export function ContactManagement() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-
-
-
   const handleEdit = (contact) => {
     setSelectedContact({ ...contact, queryId: contact.id });
     setOpenEditModal(true);
   };
-
   const handleDelete = (contact) => {
     setSelectedContact(contact);
     setOpenDeleteModal(true);
   };
-
   const handleSearch = (value) => {
     setSearchQuery(value);
     setCurrentPage(1);
     clearTimeout(timeoutId);
     const _timeoutId = setTimeout(() => {
       fetchContacts(value, 1);
-    }, 2000); // debounce
+    }, 2000); 
     setTimeoutId(_timeoutId);
   };
-
-  const fetchContacts = async (query = searchQuery, page = currentPage) => {
+   const fetchContacts = async (query = searchQuery, page = currentPage) => {
     try {
       setLoading(true);
       const res = await communication.getQueryList(page, query);
@@ -107,9 +101,8 @@ export function ContactManagement() {
         remarks: selectedContact.remarks,
         subject: selectedContact.subject
       });
-
-      if (res?.data?.status === "SUCCESS") {
-        // Update state locally
+     if (res?.data?.status === "SUCCESS") {
+        toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
         setContacts((prev) =>
           prev.map((c) =>
             c.id === selectedContact.queryId ? { ...c, ...selectedContact } : c
@@ -125,8 +118,7 @@ export function ContactManagement() {
       setLoading(false);
     }
   };
-
-  const confirmDelete = async () => {
+    const confirmDelete = async () => {
     try {
       setLoading(true);
       const res = await communication.deleteQuery({ queryIds: [selectedContact.id] });
@@ -142,20 +134,16 @@ export function ContactManagement() {
       setLoading(false);
     }
   };
+useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchContacts(searchQuery, currentPage);
+    }, 500);
 
-  useEffect(() => {
-  const timer = setTimeout(() => {
-    fetchContacts(searchQuery, currentPage);
-  }, 500);
-
-  return () => clearTimeout(timer); // cleanup
-}, [searchQuery, currentPage]);
-
+    return () => clearTimeout(timer); 
+  }, [searchQuery, currentPage]);
 
   return (
     <div className="space-y-6">
-
-
       <Card>
         <CardContent className="p-6 space-y-4">
           <p className="text-lg font-semibold">Query Management</p>
@@ -166,8 +154,6 @@ export function ContactManagement() {
               onSearchChange={handleSearch}
             />
           </div>
-
-
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
@@ -260,30 +246,30 @@ export function ContactManagement() {
           </div>
         </CardContent>
       </Card>
-
-
-
       {/* Edit Modal */}
       <Dialog open={openEditModal} onOpenChange={setOpenEditModal}>
         <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
-          {/* Header */}
           <div
             className="text-white flex justify-between items-center px-4 py-2"
             style={{ backgroundColor: '#2ea984' }}
           >
             <h3 className="font-semibold text-lg">Edit Contact</h3>
-            <button
-              className="text-white text-xl font-bold"
-              onClick={() => setOpenEditModal(false)}
-            >
-
+            <button onClick={() => setOpenEditModal(false)}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
-
-          {/* Body */}
           {selectedContact && (
             <div className="p-4 space-y-4">
-              {/* Subject */}
+
               <div>
                 <label className="text-sm font-medium">Subject</label>
                 <Input
@@ -295,8 +281,6 @@ export function ContactManagement() {
                   className="mt-2"
                 />
               </div>
-
-              {/* Message */}
               <div>
                 <label className="text-sm font-medium">Message</label>
                 <Textarea
@@ -307,8 +291,6 @@ export function ContactManagement() {
                   className="mt-2"
                 />
               </div>
-
-              {/* Status */}
               <div>
                 <label className="text-sm font-medium">Status</label>
                 <Select
@@ -328,8 +310,6 @@ export function ContactManagement() {
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* Remarks */}
               <div>
                 <label className="text-sm font-medium">Remarks</label>
                 <Textarea
@@ -344,8 +324,6 @@ export function ContactManagement() {
               </div>
             </div>
           )}
-
-          {/* Footer */}
           <DialogFooter className="flex justify-center gap-4 p-4">
             <Button
               variant="outline"
@@ -368,27 +346,30 @@ export function ContactManagement() {
       {/* Delete Confirmation Modal */}
       <Dialog open={openDeleteModal} onOpenChange={setOpenDeleteModal}>
         <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
-          {/* Header */}
+
           <div
             className="text-white flex justify-between items-center px-4 py-2"
             style={{ backgroundColor: '#2ea984' }}
           >
             <h3 className="font-semibold text-lg">Confirm Delete</h3>
-            <button
-              className="text-white text-xl font-bold"
-              onClick={() => setOpenDeleteModal(false)}
-            >
+            <button onClick={() => setOpenDeleteModal(false)}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
-
-          {/* Body */}
           <div className="p-4 text-center">
             <p className="text-gray-700">
               Are you sure you want to delete this contact?
             </p>
           </div>
-
-          {/* Footer */}
           <DialogFooter className="flex justify-center gap-4 p-4">
             <Button
               variant="outline"
@@ -397,7 +378,6 @@ export function ContactManagement() {
             >
               Cancel
             </Button>
-
             <Button
               style={{ backgroundColor: '#2ea984' }}
               className="hover:opacity-90 text-white"
@@ -408,7 +388,6 @@ export function ContactManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }
