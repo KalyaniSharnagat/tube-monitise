@@ -22,69 +22,58 @@ export function CoinManagement() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [coinToDelete, setCoinToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [timeoutId, setTimeoutId] = useState();
-  const [searchString, setSearchString] = useState("");
   const itemsPerPage = 10;
   const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
 
+  const openCreateModal = () => {
+    setNewCoin({ id: '', coins: '', price: '' });
+    setIsEditing(false);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (pkg) => {
+    setNewCoin({ id: pkg.id, coins: pkg.coins, price: pkg.amount });
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
+
+  const handleSearch = (value) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
 
   const openDeleteModal = (pkgId) => {
     setCoinToDelete(pkgId);
     setDeleteModalOpen(true);
   };
 
-  const confirmDeleteCoin = async () => {
+  const fetchCoins = async (query = searchQuery, page = currentPage) => {
     try {
-      const res = await communication.deleteCoinSlot([coinToDelete]);
-      if (res?.data?.status === "SUCCESS") {
-        toast.success("Coin package deleted successfully!", { position: "top-right", autoClose: 3000 });
-        fetchCoins();
+      setLoading(true);
+      const res = await communication.getCoinSlotList({ page, searchString: "" });
+
+      if (res?.data?.status === 'SUCCESS') {
+        let slots = res.data.slots || [];
+
+        // frontend filter
+        if (query) {
+          slots = slots.filter(slot =>
+            String(slot.amount).includes(query) ||
+            String(slot.coins).includes(query)
+          );
+        }
+        setCoinPackages(slots);
+        setTotalPages(res.data.totalPages || 1);
       } else {
-        toast.warning(res.data.message || "Failed to delete coin package", { position: "top-right", autoClose: 3000 });
+        toast.warning(res.data.message, { position: 'top-right', autoClose: 3000 });
       }
     } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong while deleting coin package.", { position: "top-right", autoClose: 3000 });
+      console.error("Error Response:", error.response?.data);
     } finally {
-      setDeleteModalOpen(false);
-      setCoinToDelete(null);
+      setLoading(false);
     }
   };
-
-  const fetchCoins = async (query = searchQuery, page = currentPage) => {
-  try {
-    setLoading(true);
-    const res = await communication.getCoinSlotList({ page, searchString: "" }); // empty search bhejo
-
-    if (res?.data?.status === 'SUCCESS') {
-      let slots = res.data.slots || [];
-
-      // frontend filter
-      if (query) {
-        slots = slots.filter(slot =>
-          String(slot.amount).includes(query) || 
-          String(slot.coins).includes(query)
-        );
-      }
-
-      setCoinPackages(slots);
-      setTotalPages(res.data.totalPages || 1);
-    } else {
-      toast.warning(res.data.message, { position: 'top-right', autoClose: 3000 });
-    }
-  } catch (error) {
-    console.error("Error Response:", error.response?.data);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-  useEffect(() => {
-    fetchCoins();
-  }, []);
-
 
   const handleSaveCoin = async () => {
     try {
@@ -122,30 +111,27 @@ export function CoinManagement() {
     }
   };
 
-  const openCreateModal = () => {
-    setNewCoin({ id: '', coins: '', price: '' });
-    setIsEditing(false);
-    setIsModalOpen(true);
+  const confirmDeleteCoin = async () => {
+    try {
+      const res = await communication.deleteCoinSlot([coinToDelete]);
+      if (res?.data?.status === "SUCCESS") {
+        toast.success("Coin package deleted successfully!", { position: "top-right", autoClose: 3000 });
+        fetchCoins();
+      } else {
+        toast.warning(res.data.message || "Failed to delete coin package", { position: "top-right", autoClose: 3000 });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while deleting coin package.", { position: "top-right", autoClose: 3000 });
+    } finally {
+      setDeleteModalOpen(false);
+      setCoinToDelete(null);
+    }
   };
 
-  const openEditModal = (pkg) => {
-    setNewCoin({ id: pkg.id, coins: pkg.coins, price: pkg.amount });
-    setIsEditing(true);
-    setIsModalOpen(true);
-  };
-
-  const handleSearch = (value) => {
-  setSearchQuery(value);
-  setCurrentPage(1);
-
-  clearTimeout(timeoutId);
-  const _timeoutId = setTimeout(() => {
-    fetchCoins(value, 1); // ✅ latest value pass
-  }, 2000); // debounce
-  setTimeoutId(_timeoutId);
-};
-
-
+  useEffect(() => {
+    fetchCoins();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -230,121 +216,121 @@ export function CoinManagement() {
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
-       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-  <div className="bg-white rounded-lg w-[500px] shadow-lg">
-    
-    {/* Header with green strip */}
-    <div className="flex items-center justify-between bg-[#2ea984] text-white px-4 py-3 rounded-t-lg">
-      <h3 className="text-lg font-semibold">
-        {isEditing ? "Edit Coin Package" : "Add New Coin"}
-      </h3>
-      <button onClick={() => setIsModalOpen(false)}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 text-white"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-[500px] shadow-lg">
 
-    {/* Body */}
-    <div className="p-6">
-      <Input
-        placeholder="Coins"
-        type="number"
-        value={newCoin.coins}
-        onChange={(e) =>
-          setNewCoin({ ...newCoin, coins: parseInt(e.target.value) })
-        }
-        className="mb-3 no-spinner"
-      />
-      <Input
-        placeholder="Amount (₹)"
-        type="number"
-        value={newCoin.price}
-        onChange={(e) =>
-          setNewCoin({ ...newCoin, price: parseFloat(e.target.value) })
-        }
-        className="mb-3 no-spinner"
-      />
+            {/* Header with green strip */}
+            <div className="flex items-center justify-between bg-[#2ea984] text-white px-4 py-3 rounded-t-lg">
+              <h3 className="text-lg font-semibold">
+                {isEditing ? "Edit Coin Package" : "Add New Coin"}
+              </h3>
+              <button onClick={() => setIsModalOpen(false)}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
 
-      {/* Footer Buttons */}
-      <div className="flex justify-end space-x-2 mt-4">
-        <Button
-          variant="outline"
-          onClick={() => setIsModalOpen(false)}
-          className="hover:bg-[#565e64] hover:text-white"
-        >
-          Cancel
-        </Button>
+            {/* Body */}
+            <div className="p-6">
+              <Input
+                placeholder="Coins"
+                type="number"
+                value={newCoin.coins}
+                onChange={(e) =>
+                  setNewCoin({ ...newCoin, coins: parseInt(e.target.value) })
+                }
+                className="mb-3 no-spinner"
+              />
+              <Input
+                placeholder="Amount (₹)"
+                type="number"
+                value={newCoin.price}
+                onChange={(e) =>
+                  setNewCoin({ ...newCoin, price: parseFloat(e.target.value) })
+                }
+                className="mb-3 no-spinner"
+              />
 
-        <Button
-          onClick={handleSaveCoin}
-          style={{ backgroundColor: "#2ea984", color: "white" }}
-        >
-          {isEditing ? "Update" : "Create"}
-        </Button>
-      </div>
-    </div>
-  </div>
-</div>
+              {/* Footer Buttons */}
+              <div className="flex justify-end space-x-2 mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsModalOpen(false)}
+                  className="hover:bg-[#565e64] hover:text-white"
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  onClick={handleSaveCoin}
+                  style={{ backgroundColor: "#2ea984", color: "white" }}
+                >
+                  {isEditing ? "Update" : "Create"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
 
       )}
 
       {/* Delete Confirmation Modal */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-  <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
-    {/* Custom Header */}
-    <div
-      className="text-white flex justify-between items-center px-4 py-2"
-      style={{ backgroundColor: "#2ea984" }}
-    >
-      <h3 className="font-semibold text-lg">Delete Confirmation</h3>
-      <button onClick={() => setDeleteModalOpen(false)}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 text-white"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
+        <DialogContent className="p-0 overflow-hidden rounded-lg max-w-lg w-full">
+          {/* Custom Header */}
+          <div
+            className="text-white flex justify-between items-center px-4 py-2"
+            style={{ backgroundColor: "#2ea984" }}
+          >
+            <h3 className="font-semibold text-lg">Delete Confirmation</h3>
+            <button onClick={() => setDeleteModalOpen(false)}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-    {/* Body */}
-    <div className="p-4 text-center">
-      <p className="text-gray-700">Are you sure you want to delete this coin?</p>
-    </div>
+          {/* Body */}
+          <div className="p-4 text-center">
+            <p className="text-gray-700">Are you sure you want to delete this coin?</p>
+          </div>
 
-    {/* Footer */}
-    <DialogFooter className="flex justify-center gap-4 p-4">
-      <Button
-        variant="outline"
-        onClick={() => setDeleteModalOpen(false)}
-        className="border-[#565e64] text-[#565e64] hover:bg-[#565e64] hover:text-white"
-      >
-        Cancel
-      </Button>
+          {/* Footer */}
+          <DialogFooter className="flex justify-center gap-4 p-4">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteModalOpen(false)}
+              className="border-[#565e64] text-[#565e64] hover:bg-[#565e64] hover:text-white"
+            >
+              Cancel
+            </Button>
 
-      <Button
-        style={{ backgroundColor: '#2ea984' }}
-        className="hover:opacity-90 text-white"
-        onClick={confirmDeleteCoin}
-      >
-        Delete
-      </Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+            <Button
+              style={{ backgroundColor: '#2ea984' }}
+              className="hover:opacity-90 text-white"
+              onClick={confirmDeleteCoin}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog >
 
-    </div>
+    </div >
   );
 }

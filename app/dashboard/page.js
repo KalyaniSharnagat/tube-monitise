@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
-import Loader from "../loader/loader"; 
 
-import UserManagement from "./UserManagement"; 
 import { CoinManagement } from "./coin/CoinManagement";
 import { VideoManagement } from "./videomange/VideoManagement";
 import { ContactManagement } from "./contact/ContactManagement";
 import { TransactionManagement } from "./transaction/TransactionManagement";
 import {Notification} from "./notificationmange/Notification"; 
+import { UserManagement } from "./users/UserManagement";
 
 export default function Page() {
   const [loading, setLoading] = useState(true);
@@ -20,9 +19,9 @@ export default function Page() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading) {
-    return <Loader text="Loading page..." />; 
-  }
+  // if (loading) {
+  //   return <Loader text="Loading page..." />; 
+  // }
 
   return (
     <Layout>
