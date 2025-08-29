@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Checkbox } from '@/components/ui/checkbox';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { setCookie } from 'cookies-next';
+import { deleteCookie, getCookie, setCookie } from 'cookies-next';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Enter a valid email'),
@@ -24,23 +24,11 @@ export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '', remember: false },
     mode: 'onChange',
   });
-
-  // On page load, check if saved credentials exist
-  useEffect(() => {
-    const savedEmail = localStorage.getItem('rememberEmail');
-    const savedPassword = localStorage.getItem('rememberPassword');
-    if (savedEmail && savedPassword) {
-      form.setValue('email', savedEmail);
-      form.setValue('password', savedPassword);
-      form.setValue('remember', true);
-    }
-  }, [form]);
 
   const onSubmit = async (values) => {
     try {
@@ -63,13 +51,12 @@ export default function LoginPage() {
           setCookie('userDetails', JSON.stringify(data.admin));
         }
 
-        // ✅ Save credentials if "Remember me" is checked
         if (values.remember) {
-          localStorage.setItem('rememberEmail', values.email);
-          localStorage.setItem('rememberPassword', values.password);
+          setCookie("rememberEmail", values.email, { path: "/" });
+          setCookie("rememberPassword", values.password, { path: "/" });
         } else {
-          localStorage.removeItem('rememberEmail');
-          localStorage.removeItem('rememberPassword');
+          deleteCookie("rememberEmail");
+          deleteCookie("rememberPassword");
         }
 
         router.push('/dashboard/users');
@@ -83,6 +70,17 @@ export default function LoginPage() {
       toast.error(error?.message || 'Login failed');
     }
   };
+
+  useEffect(() => {
+    const savedEmail = getCookie("rememberEmail");
+    const savedPassword = getCookie("rememberPassword");
+
+    if (savedEmail && savedPassword) {
+      form.setValue("email", savedEmail);
+      form.setValue("password", savedPassword);
+      form.setValue("remember", true);
+    }
+  }, [form]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-6">

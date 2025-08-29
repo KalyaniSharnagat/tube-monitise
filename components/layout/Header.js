@@ -73,7 +73,7 @@ export function Header({ activeSection, onToggleSidebar, isCollapsed }) {
 
   // Socket connection
   useEffect(() => {
-    const socketConnection = io(process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000", {
+    const socketConnection = io(process.env.NEXT_PUBLIC_SERVER_URL, {
       transports: ["websocket"],
     });
     setSocket(socketConnection);
@@ -91,9 +91,9 @@ export function Header({ activeSection, onToggleSidebar, isCollapsed }) {
     }
   }, [socket]);
 
-  useEffect(() => {
-    fetchNotificationCount();
-  }, []);
+  // useEffect(() => {
+  //   fetchNotificationCount();
+  // }, []);
 
   // Fetch profile when modal opens
   useEffect(() => {

@@ -15,6 +15,7 @@ import {
 import { communication } from '@/services/communication';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import { FilterBar } from '@/components/common/FilterBar';
 
 export function Notification() {
   const [notifications, setNotifications] = useState([]);
@@ -29,13 +30,40 @@ export function Notification() {
   const [bulkDeleteType, setBulkDeleteType] = useState(null);
   const router = useRouter();
 
-  // 🔹 Fetch notifications list
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === notifications.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(notifications.map((n) => n.id));
+    }
+  };
+
+  const handleDeleteSelectedClick = () => {
+    if (selectedIds.length === 0) return;
+    setBulkDeleteType("SELECTED");
+    setIsOpen(true);
+  };
+
+  const handleDeleteClick = (id) => {
+    setDeleteId(id);
+    setIsOpen(true);
+  };
+
+  const handleSearch = (value) => {
+    setSearchString(value);
+    setPage(1);
+  };
+
   const fetchNotifications = async () => {
     try {
       setLoading(true);
       const res = await communication.getAllNotification(page, searchString);
-
-      console.log("API Response:", res?.data);
 
       if (res?.data?.status === 'SUCCESS') {
         toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
@@ -60,27 +88,12 @@ export function Notification() {
       }
     } catch (error) {
       console.error('Error fetching notifications:', error.response?.data);
-
-
-
       setNotifications([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Load on mount or page/search change
-  useEffect(() => {
-    fetchNotifications();
-  }, [page, searchString]);
-
-  // Delete click (single)
-  const handleDeleteClick = (id) => {
-    setDeleteId(id);
-    setIsOpen(true);
-  };
-
-  // confirmDelete (single delete)
   const confirmDelete = async () => {
     try {
       const res = await communication.deleteSelectedNotification([deleteId]);
@@ -108,127 +121,19 @@ export function Notification() {
     }
   };
 
-  const toggleSelect = (id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.length === notifications.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(notifications.map((n) => n.id));
-    }
-  };
-
-  // Bulk delete selected button click
-  const handleDeleteSelectedClick = () => {
-    if (selectedIds.length === 0) return;
-    setBulkDeleteType("SELECTED");
-    setIsOpen(true);
-  };
-
-  // Delete All button click
-  const handleDeleteAllClick = () => {
-    setBulkDeleteType("ALL");
-    setIsOpen(true);
-  };
-
-  // confirm bulk delete
-  const confirmBulkDelete = async () => {
-    try {
-      let res;
-      if (bulkDeleteType === "SELECTED") {
-        res = await communication.deleteSelectedNotification(selectedIds);
-        if (res?.data?.status === "SUCCESS") {
-          setNotifications((prev) =>
-            prev.filter((n) => !selectedIds.includes(n.id))
-          );
-          setSelectedIds([]);
-          toast.success("Selected notifications deleted successfully", {
-            position: "top-right",
-            autoClose: 3000,
-          });
-        } else {
-          toast.warning(res?.data?.message || "Failed to delete selected notifications", {
-            position: "top-right",
-            autoClose: 3000,
-          });
-        }
-      } else if (bulkDeleteType === "ALL") {
-        res = await communication.deleteAllNotification();
-        if (res?.data?.status === "SUCCESS") {
-          setNotifications([]);
-          setSelectedIds([]);
-          toast.success("All notifications deleted successfully", {
-            position: "top-right",
-            autoClose: 3000,
-          });
-        } else {
-          toast.warning(res?.data?.message || "Failed to delete all notifications", {
-            position: "top-right",
-            autoClose: 3000,
-          });
-        }
-      }
-    } catch (err) {
-      console.error("Error bulk deleting notifications:", err);
-      toast.error("Error performing bulk delete", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    } finally {
-      setIsOpen(false);
-      setBulkDeleteType(null);
-    }
-  };
+  useEffect(() => {
+    fetchNotifications();
+  }, [page, searchString]);
 
   return (
     <div className="space-y-6">
       {/* Search Box */}
-      <div className="flex items-center justify-between gap-2 w-full">
-        {/* Left Side → Search Input */}
-        <input
-          type="text"
-          placeholder="Search Notification..."
-          value={searchString}
-          onChange={(e) => setSearchString(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              fetchVideos();
-            }
-          }}
-          className="border p-2 rounded-md w-1/3"
+      <div className="sticky top-0 z-20 bg-white">
+        <FilterBar
+          showSearch
+          searchPlaceholder="Search Notification..."
+          onSearchChange={handleSearch}
         />
-
-        {/* Right Side → Pagination */}
-        {totalPages > 0 && (
-          <div className="flex items-center gap-2 text-sm pe-5">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={page === 1}
-              onClick={() => setPage((prev) => prev - 1)}
-            >
-              ‹
-            </Button>
-
-            <span>
-              Page <span className="font-medium">{page}</span> of{" "}
-              <span className="font-medium">{totalPages}</span>
-            </span>
-
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={page === totalPages}
-              onClick={() => setPage((prev) => prev + 1)}
-            >
-              ›
-            </Button>
-          </div>
-        )}
       </div>
 
       {loading && <p className="text-center">Loading notifications...</p>}
@@ -368,7 +273,7 @@ export function Notification() {
                 setBulkDeleteType(null);
               }}
             >
-              ×
+
             </button>
           </div>
 
@@ -400,7 +305,7 @@ export function Notification() {
             <Button
               style={{ backgroundColor: '#2ea984' }}
               className="hover:opacity-90 text-white"
-              onClick={deleteId ? confirmDelete : confirmBulkDelete}
+              onClick={deleteId ? confirmDelete : handleDeleteSelectedClick}
             >
               Delete
             </Button>
