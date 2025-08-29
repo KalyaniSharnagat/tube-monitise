@@ -70,9 +70,20 @@ export function CoinManagement() {
         }
         setCoinPackages(slots);
         setTotalPages(res.data.totalPages || 1);
-      } else {
+      } 
+      else if ('JWT_INVALID' === res.data.status) {
+              toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
+              deleteCookie('auth');
+              deleteCookie('userDetails');
+              setTimeout(() => {
+                router.push('/login');
+              }, 1000);
+            }
+      
+      else {
         toast.warning(res.data.message, { position: 'top-right', autoClose: 3000 });
       }
+      
     } catch (error) {
       console.error("Error Response:", error.response?.data);
     } finally {
