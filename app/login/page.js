@@ -31,7 +31,7 @@ export default function LoginPage() {
     mode: 'onChange',
   });
 
-  // ✅ On page load, check if saved credentials exist
+  // On page load, check if saved credentials exist
   useEffect(() => {
     const savedEmail = localStorage.getItem('rememberEmail');
     const savedPassword = localStorage.getItem('rememberPassword');
@@ -59,8 +59,8 @@ export default function LoginPage() {
 
       if (serverResponse.ok && data?.token) {
         setCookie('auth', data.token);
-        if (data.userDetails) {
-          setCookie('userDetails', JSON.stringify(data.userDetails));
+        if (data.admin) {
+          setCookie('userDetails', JSON.stringify(data.admin));
         }
 
         // ✅ Save credentials if "Remember me" is checked
