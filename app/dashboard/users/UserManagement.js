@@ -200,7 +200,7 @@ export function UserManagement() {
                           <button
                             onClick={() => toggleStatus(user)}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full
-              ${user.status === 'Active' ? 'bg-[#2ea984]' : 'bg-gray-400'}`}
+                             ${user.status === 'Active' ? 'bg-[#2ea984]' : 'bg-gray-400'}`}
                             title={user.status === 'Active' ? 'Active' : 'Inactive'}
                           >
                             <span

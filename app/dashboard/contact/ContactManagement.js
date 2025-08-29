@@ -136,14 +136,16 @@ export function ContactManagement() {
 
   return (
     <div className="space-y-6">
-      <p className="text-lg font-semibold">Query Management</p>
-      {/* Search Box */}
+      
+      
       <Card>
+       
     <CardContent className="p-6 space-y-4">
+       <p className="text-lg font-semibold">Query Management</p>
 
-      {/* Search + Pagination inside same Card */}
+     
       <div className="flex items-center justify-between gap-2 w-full">
-        {/* Search Input */}
+       
         <input
           type="text"
           placeholder="Search query..."
@@ -157,7 +159,7 @@ export function ContactManagement() {
           className="border p-2 rounded-md w-1/3"
         />
 
-        {/* Pagination */}
+       
         {totalPages > 0 && (
           <div className="flex items-center gap-2 text-sm pe-5">
             <Button
@@ -186,7 +188,7 @@ export function ContactManagement() {
         )}
       </div>
 
-      {/* Table */}
+      
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
