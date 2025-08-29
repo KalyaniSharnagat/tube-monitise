@@ -306,7 +306,7 @@ export function Notification() {
                           className="p-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
                           onClick={() => handleDeleteClick(notification.id)}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </Button>
 
                       </td>

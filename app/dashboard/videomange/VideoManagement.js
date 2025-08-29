@@ -42,51 +42,57 @@ export function VideoManagement() {
   const [selectedVideoId, setSelectedVideoId] = useState(null);
   const router = useRouter();
 
-  const fetchVideos = async () => {
-    try {
-      setLoading(true);
-      const res = await communication.getVideoListForAdmin(page, searchString);
+const fetchVideos = async () => {
+  try {
+    setLoading(true);
+    const res = await communication.getVideoListForAdmin(page, searchString);
 
-      if (res?.data?.status === 'SUCCESS') {
-        toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
-        setVideos(res.data.videos || []);
-      }
-      else if ('JWT_INVALID' === res.data.status) {
-        toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
-        deleteCookie('auth');
-        deleteCookie('userDetails');
-        setTimeout(() => {
-          router.push('/login');
-        }, 1000);
-      }
-      else {
-        toast.error(res?.data?.message || 'Failed to fetch videos', {
-          position: 'top-right',
-          autoClose: 3000,
-        });
-
-        // ✅ Handle JWT Invalid
-        if (apiStatus === 'JWT_INVALID') {
-          setCookie(null, 'auth', '', { maxAge: -1, path: '/' });
-          setCookie(null, 'userDetails', '', { maxAge: -1, path: '/' });
-
-          setTimeout(() => {
-            router.push('/login');
-          }, 1500);
-        }
-
-        setVideos([]);
-        setTotalPages(0);
-      }
-    } catch (error) {
-      console.error('Error fetching videos:', error.response?.data);
-
-
+    if (res?.data?.status === 'SUCCESS') {
+      toast.success(res.data.message, { position: 'top-right', autoClose: 3000 });
+      setVideos(res.data.videos || []);
+      setTotalPages(res.data.totalPages || 0);
+    } else if (res?.data?.status === 'JWT_INVALID') {
+      toast.error(res.data.message, { position: 'top-right', autoClose: 3000 });
+      deleteCookie('auth');
+      deleteCookie('userDetails');
+      setTimeout(() => {
+        router.push('/login');
+      }, 1000);
+    } else {
+      toast.error(res?.data?.message || 'Failed to fetch videos', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
       setVideos([]);
-    } finally {
-      setLoading(false);
+      setTotalPages(0);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching videos:', error.response?.data);
+
+    const apiStatus = error.response?.data?.status;
+    const message = error.response?.data?.message || 'Error fetching videos';
+
+    toast.error(message, {
+      position: 'top-right',
+      autoClose: 3000,
+    });
+
+    // ✅ Handle JWT Invalid
+    if (apiStatus === 'JWT_INVALID') {
+      deleteCookie('auth');
+      deleteCookie('userDetails');
+      setTimeout(() => {
+        router.push('/login');
+      }, 1500);
+    }
+
+    setVideos([]);
+    setTotalPages(0);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const getYoutubeEmbedUrl = (url) => {
     try {
